@@ -222,6 +222,11 @@
             <i class="bi bi-clock-history me-1"></i>History
           </button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-loading" type="button" role="tab">
+            <i class="bi bi-truck me-1"></i>Loading
+          </button>
+        </li>
       </ul>
 
       <div class="tab-content">
@@ -598,6 +603,149 @@
           </div>
         </div>
 
+        <div id="tab-loading" class="tab-pane fade" role="tabpanel">
+          <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-bottom">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-truck text-primary me-2"></i>Container Loading Plan
+              </h5>
+              <p class="text-muted small mb-0">40' Reefer Container - Max Capacity: 28,350 kg</p>
+            </div>
+            <div class="card-body">
+              <!-- Container Overview -->
+              <div class="row mb-4">
+                <div class="col-lg-8">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body">
+                      <h6 class="card-title text-primary mb-3">
+                        <i class="bi bi-box-seam me-1"></i>Container Status
+                      </h6>
+                      <div class="row g-3">
+                        <div class="col-md-3">
+                          <div class="text-center">
+                            <div class="h4 text-success mb-1" id="loaded-weight">0 kg</div>
+                            <small class="text-muted">Loaded Weight</small>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-center">
+                            <div class="h4 text-warning mb-1" id="remaining-capacity">28,350 kg</div>
+                            <small class="text-muted">Remaining</small>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-center">
+                            <div class="h4 text-info mb-1" id="utilization-percent">0%</div>
+                            <small class="text-muted">Utilization</small>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-center">
+                            <div class="h4 text-primary mb-1" id="loaded-orders">0</div>
+                            <small class="text-muted">Orders Loaded</small>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Progress Bar -->
+                      <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                          <small class="text-muted">Container Capacity</small>
+                          <small class="text-muted">28,350 kg</small>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                          <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+                               id="capacity-progress" role="progressbar" style="width: 0%" 
+                               aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-lg-4">
+                  <div class="card border-0 bg-primary text-white">
+                    <div class="card-body text-center">
+                      <i class="bi bi-truck display-4 mb-3"></i>
+                      <h6>40' Reefer Container</h6>
+                      <small>Refrigerated Container</small>
+                      <div class="mt-3">
+                        <div class="btn-group w-100" role="group">
+                          <button type="button" class="btn btn-outline-light btn-sm" id="auto-optimize">
+                            <i class="bi bi-gear-fill me-1"></i>Auto Optimize
+                          </button>
+                          <button type="button" class="btn btn-outline-light btn-sm" id="reset-loading">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Orders List -->
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="card border-0 bg-light">
+                    <div class="card-header bg-transparent border-bottom">
+                      <h6 class="card-title mb-0">
+                        <i class="bi bi-list-check text-success me-1"></i>Available Orders
+                      </h6>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive" style="max-height: 400px;">
+                        <table class="table table-hover align-middle m-0">
+                          <thead class="table-light sticky-top">
+                            <tr>
+                              <th class="text-nowrap">Order File</th>
+                              <th class="text-end text-nowrap">Weight (kg)</th>
+                              <th class="text-center text-nowrap">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody id="available-orders">
+                            <!-- Orders will be populated by JavaScript -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-lg-6">
+                  <div class="card border-0 bg-success bg-opacity-10">
+                    <div class="card-header bg-transparent border-bottom">
+                      <h6 class="card-title mb-0">
+                        <i class="bi bi-check-circle text-success me-1"></i>Loaded Orders
+                      </h6>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive" style="max-height: 400px;">
+                        <table class="table table-hover align-middle m-0">
+                          <thead class="table-light sticky-top">
+                            <tr>
+                              <th class="text-nowrap">Order File</th>
+                              <th class="text-end text-nowrap">Weight (kg)</th>
+                              <th class="text-center text-nowrap">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody id="loaded-orders-list">
+                            <!-- Loaded orders will be populated by JavaScript -->
+                          </tbody>
+                        </table>
+                      </div>
+                      <div id="no-loaded-orders" class="text-center p-4 text-muted">
+                        <i class="bi bi-inbox display-4 mb-2"></i>
+                        <p>No orders loaded yet</p>
+                        <small>Click "Load" on available orders to add them to the container</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
 
@@ -1015,7 +1163,257 @@
       if (document.querySelector('#tab-history.active')) {
         loadComparisonHistory();
       }
+
+      // Initialize loading tab
+      const loadingTab = document.querySelector('[data-bs-target="#tab-loading"]');
+      if (loadingTab) {
+        loadingTab.addEventListener('shown.bs.tab', function() {
+          initializeLoadingTab();
+        });
+      }
+      
+      // Also initialize loading when page loads if loading tab is active
+      if (document.querySelector('#tab-loading.active')) {
+        initializeLoadingTab();
+      }
     });
+
+    // Loading Tab Functionality
+    const CONTAINER_MAX_CAPACITY = 28350; // kg
+    let availableOrders = [];
+    let loadedOrders = [];
+    let currentLoadedWeight = 0;
+
+    function initializeLoadingTab() {
+      // Initialize with batch orders data - use fulfillable_kg (can_fulfill_carton * order_kg_per_ctn)
+      availableOrders = [
+        {% for item in items %}
+        {
+          token: '{{ item.token }}',
+          name: '{{ item.order_name }}',
+          weight: {{ item.summary.fulfillable_kg }},
+          totalOrderWeight: {{ item.summary.total_kg_all }},
+          readyKg: {{ item.summary.ready_kg }},
+          fullItems: {{ item.summary.full }},
+          notFullItems: {{ item.summary.not_full }},
+          notHaveItems: {{ item.summary.not_have }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
+      
+      loadedOrders = [];
+      currentLoadedWeight = 0;
+      
+      renderAvailableOrders();
+      renderLoadedOrders();
+      updateContainerStatus();
+      
+      // Event listeners
+      document.getElementById('auto-optimize').addEventListener('click', autoOptimizeLoading);
+      document.getElementById('reset-loading').addEventListener('click', resetLoading);
+    }
+
+    function renderAvailableOrders() {
+      const tbody = document.getElementById('available-orders');
+      tbody.innerHTML = '';
+      
+      availableOrders.forEach(order => {
+        const canLoad = (currentLoadedWeight + order.weight) <= CONTAINER_MAX_CAPACITY;
+        const row = document.createElement('tr');
+        row.className = canLoad ? '' : 'table-warning';
+        
+        row.innerHTML = `
+          <td>
+            <div class="d-flex align-items-center">
+              <div>
+                <div class="fw-medium text-break">${order.name}</div>
+                <small class="text-muted">
+                  Full: ${order.fullItems} | Not Full: ${order.notFullItems} | Not Have: ${order.notHaveItems}
+                </small>
+                <small class="text-info d-block">
+                  Full KG: ${order.weight.toLocaleString()} kg | Stock: ${order.readyKg.toLocaleString()} kg | Order: ${order.totalOrderWeight.toLocaleString()} kg
+                </small>
+              </div>
+            </div>
+          </td>
+          <td class="text-end">
+            <span class="fw-bold text-success">${order.weight.toLocaleString()}</span>
+            <br><small class="text-muted">(Full KG)</small>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm ${canLoad ? 'btn-success' : 'btn-outline-secondary'}" 
+                    onclick="loadOrder('${order.token}')" 
+                    ${canLoad ? '' : 'disabled'}>
+              <i class="bi bi-plus-circle me-1"></i>Load
+            </button>
+          </td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderLoadedOrders() {
+      const tbody = document.getElementById('loaded-orders-list');
+      const noOrdersDiv = document.getElementById('no-loaded-orders');
+      
+      tbody.innerHTML = '';
+      
+      if (loadedOrders.length === 0) {
+        noOrdersDiv.style.display = 'block';
+      } else {
+        noOrdersDiv.style.display = 'none';
+        
+        loadedOrders.forEach((order, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="me-2">
+                  <span class="badge bg-success">${index + 1}</span>
+                </div>
+                <div>
+                  <div class="fw-medium text-break">${order.name}</div>
+                  <small class="text-muted">
+                    Full: ${order.fullItems} | Not Full: ${order.notFullItems} | Not Have: ${order.notHaveItems}
+                  </small>
+                  <small class="text-info d-block">
+                    Full KG: ${order.weight.toLocaleString()} kg | Stock: ${order.readyKg.toLocaleString()} kg | Order: ${order.totalOrderWeight.toLocaleString()} kg
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td class="text-end">
+              <span class="fw-bold text-success">${order.weight.toLocaleString()}</span>
+              <br><small class="text-muted">(Full KG)</small>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-danger" onclick="unloadOrder('${order.token}')">
+                <i class="bi bi-dash-circle me-1"></i>Remove
+              </button>
+            </td>
+          `;
+          
+          tbody.appendChild(row);
+        });
+      }
+    }
+
+    function updateContainerStatus() {
+      const remainingCapacity = CONTAINER_MAX_CAPACITY - currentLoadedWeight;
+      const utilizationPercent = (currentLoadedWeight / CONTAINER_MAX_CAPACITY) * 100;
+      
+      document.getElementById('loaded-weight').textContent = currentLoadedWeight.toLocaleString() + ' kg';
+      document.getElementById('remaining-capacity').textContent = remainingCapacity.toLocaleString() + ' kg';
+      document.getElementById('utilization-percent').textContent = utilizationPercent.toFixed(1) + '%';
+      document.getElementById('loaded-orders').textContent = loadedOrders.length;
+      
+      const progressBar = document.getElementById('capacity-progress');
+      progressBar.style.width = utilizationPercent + '%';
+      progressBar.setAttribute('aria-valuenow', utilizationPercent);
+      
+      // Change progress bar color based on utilization
+      progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+      if (utilizationPercent >= 90) {
+        progressBar.classList.add('bg-danger');
+      } else if (utilizationPercent >= 75) {
+        progressBar.classList.add('bg-warning');
+      } else {
+        progressBar.classList.add('bg-success');
+      }
+    }
+
+    function loadOrder(token) {
+      const orderIndex = availableOrders.findIndex(order => order.token === token);
+      if (orderIndex === -1) return;
+      
+      const order = availableOrders[orderIndex];
+      
+      // Check if there's enough capacity
+      if (currentLoadedWeight + order.weight > CONTAINER_MAX_CAPACITY) {
+        alert(`Cannot load order: Exceeds container capacity by ${(currentLoadedWeight + order.weight - CONTAINER_MAX_CAPACITY).toLocaleString()} kg`);
+        return;
+      }
+      
+      // Move order from available to loaded
+      availableOrders.splice(orderIndex, 1);
+      loadedOrders.push(order);
+      currentLoadedWeight += order.weight;
+      
+      renderAvailableOrders();
+      renderLoadedOrders();
+      updateContainerStatus();
+    }
+
+    function unloadOrder(token) {
+      const orderIndex = loadedOrders.findIndex(order => order.token === token);
+      if (orderIndex === -1) return;
+      
+      const order = loadedOrders[orderIndex];
+      
+      // Move order from loaded to available
+      loadedOrders.splice(orderIndex, 1);
+      availableOrders.push(order);
+      currentLoadedWeight -= order.weight;
+      
+      // Sort available orders by weight (descending) for better optimization
+      availableOrders.sort((a, b) => b.weight - a.weight);
+      
+      renderAvailableOrders();
+      renderLoadedOrders();
+      updateContainerStatus();
+    }
+
+    function autoOptimizeLoading() {
+      // Reset to start fresh
+      resetLoading();
+      
+      // Sort available orders by weight (descending) - First Fit Decreasing algorithm
+      availableOrders.sort((a, b) => b.weight - a.weight);
+      
+      // Load orders that fit
+      for (let i = availableOrders.length - 1; i >= 0; i--) {
+        const order = availableOrders[i];
+        if (currentLoadedWeight + order.weight <= CONTAINER_MAX_CAPACITY) {
+          loadOrder(order.token);
+        }
+      }
+      
+      // Show optimization result
+      const optimizationMessage = `Optimization complete! Loaded ${loadedOrders.length} orders with ${currentLoadedWeight.toLocaleString()} kg total weight.`;
+      
+      // Create a temporary alert
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+      alertDiv.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>${optimizationMessage}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      const loadingTabContent = document.querySelector('#tab-loading .card-body');
+      loadingTabContent.insertBefore(alertDiv, loadingTabContent.firstChild);
+      
+      // Auto dismiss after 5 seconds
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.remove();
+        }
+      }, 5000);
+    }
+
+    function resetLoading() {
+      // Move all loaded orders back to available
+      availableOrders = availableOrders.concat(loadedOrders);
+      loadedOrders = [];
+      currentLoadedWeight = 0;
+      
+      // Sort available orders by weight (descending)
+      availableOrders.sort((a, b) => b.weight - a.weight);
+      
+      renderAvailableOrders();
+      renderLoadedOrders();
+      updateContainerStatus();
+    }
 
     function loadComparisonHistory() {
       const batchToken = '{{ batch_token }}';

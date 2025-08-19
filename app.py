@@ -501,8 +501,11 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
     stock_file_path = os.path.join(UPLOAD_FOLDER, stock_file_row['stored_filename'])
     try:
         with open(stock_file_path, 'rb') as f:
-            stock_ds = load_excel(f)
-    except:
+            file_like = io.BytesIO(f.read())
+            file_like.filename = stock_file_path
+            stock_ds = load_excel(file_like)
+    except Exception as e:
+        print(f"Error loading stock file: {e}")
         conn.close()
         return None
     
@@ -523,7 +526,9 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
             # Load the order file from disk (this will include any updates)
             order_file_path = os.path.join(UPLOAD_FOLDER, order_file['stored_filename'])
             with open(order_file_path, 'rb') as f:
-                order_ds = load_excel(f)
+                file_like = io.BytesIO(f.read())
+                file_like.filename = order_file['original_filename']
+                order_ds = load_tabular(file_like)
             
             # Set the original filename for display purposes
             order_ds.name = order_file['original_filename']
@@ -563,6 +568,9 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
         def sum_ready_kg(rows):
             return round(sum(float(r.get('stock_carton', 0) or 0) * float(r.get('stock_kg_per_ctn', 0) or 0) for r in rows), 3)
         
+        def sum_fulfillable_kg(rows):
+            return round(sum(float(r.get('can_fulfill_carton', 0) or 0) * float(r.get('order_kg_per_ctn', 0) or 0) for r in rows), 3)
+        
         summary = {
             'total_items': len(result_rows),
             'full': sum(1 for r in result_rows if r.get('status') == 'Full'),
@@ -572,7 +580,8 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
             'total_kg_full': sum_required_kg([r for r in result_rows if r.get('status') == 'Full']),
             'total_kg_not_full': sum_required_kg([r for r in result_rows if r.get('status') == 'Not Full']),
             'total_kg_not_have': sum_required_kg([r for r in result_rows if r.get('status') == 'Not have']),
-            'ready_kg': sum_ready_kg(result_rows)
+            'ready_kg': sum_ready_kg(result_rows),
+            'fulfillable_kg': sum_fulfillable_kg(result_rows)
         }
         
         # Create Excel/PDF bytes for historical data
@@ -1082,10 +1091,26 @@ def delete_session():
         row = cursor.fetchone()
         batch_token = row[0] if row else None
 
+        # Get all uploaded files for this session to delete from uploads folder
+        cursor.execute('SELECT stored_filename FROM uploaded_files WHERE session_id=?', (session_id,))
+        file_rows = cursor.fetchall()
+        
+        # Delete files from uploads folder
+        for file_row in file_rows:
+            stored_filename = file_row[0]
+            if stored_filename:
+                file_path = os.path.join(UPLOAD_FOLDER, stored_filename)
+                try:
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                except Exception as e:
+                    print(f"Warning: Failed to delete file {file_path}: {e}")
+
         # Delete related rows
         cursor.execute('DELETE FROM scheduled_orders WHERE session_id=?', (session_id,))
         cursor.execute('DELETE FROM fish_decisions WHERE session_id=?', (session_id,))
         cursor.execute('DELETE FROM processing_results WHERE session_id=?', (session_id,))
+        cursor.execute('DELETE FROM file_comparison_history WHERE session_id=?', (session_id,))
         cursor.execute('DELETE FROM uploaded_files WHERE session_id=?', (session_id,))
         cursor.execute('DELETE FROM processing_sessions WHERE id=?', (session_id,))
         conn.commit()
@@ -1291,6 +1316,18 @@ def process_batch():
                         pass
                 return round(total, 3)
 
+            # Compute fulfillable kg using can_fulfill_carton * order_kg_per_ctn
+            def sum_fulfillable_kg(rows: List[Dict[str, Any]]) -> float:
+                total = 0.0
+                for r in rows:
+                    try:
+                        can_fulfill = float(r.get("can_fulfill_carton", 0) or 0)
+                        order_kg_per_ctn = float(r.get("order_kg_per_ctn", 0) or 0)
+                        total += can_fulfill * order_kg_per_ctn
+                    except Exception:  # noqa: BLE001
+                        pass
+                return round(total, 3)
+
             summary = {
                 "total_items": int(len(result_rows)),
                 "full": int(sum(1 for r in result_rows if r["status"] == "Full")),
@@ -1301,6 +1338,7 @@ def process_batch():
                 "total_kg_not_full": sum_required_kg([r for r in result_rows if r["status"] == "Not Full"]),
                 "total_kg_not_have": sum_required_kg([r for r in result_rows if r["status"] == "Not have"]),
                 "ready_kg": sum_ready_kg(result_rows),
+                "fulfillable_kg": sum_fulfillable_kg(result_rows),
             }
 
             # Build per-order Not have fish, aggregated by fish+pack with needed kg
@@ -2155,32 +2193,6 @@ def compare_order_files():
         # Perform comparison
         comparison_result = compare_order_file_data(original_rows, updated_rows)
         
-        # Save comparison history to database
-        try:
-            session_id = get_session_id_by_batch_token(batch_token)
-            if session_id:
-                # Find order file ID
-                conn = sqlite3.connect(DATABASE_PATH)
-                cursor = conn.cursor()
-                cursor.execute("SELECT id FROM uploaded_files WHERE session_id=? AND file_type='order' AND original_filename=? ORDER BY id DESC LIMIT 1", 
-                             (session_id, original_filename))
-                order_file_record = cursor.fetchone()
-                
-                if order_file_record:
-                    order_file_id = order_file_record[0]
-                    save_file_comparison_history(
-                        session_id=session_id,
-                        order_file_id=order_file_id,
-                        original_token=original_token,
-                        batch_token=batch_token,
-                        comparison_data=comparison_result,
-                        changes_applied=[]  # Will be filled when changes are applied
-                    )
-                
-                conn.close()
-        except Exception as e:
-            print(f"Warning: Failed to save comparison history: {e}")
-        
         return {
             "success": True,
             "comparison": comparison_result
@@ -2433,8 +2445,11 @@ def apply_order_changes():
         stock_file_path = os.path.join(UPLOAD_FOLDER, stock_file_row['stored_filename'])
         try:
             with open(stock_file_path, 'rb') as f:
-                stock_ds = load_excel(f)
-        except:
+                file_like = io.BytesIO(f.read())
+                file_like.filename = stock_file_path
+                stock_ds = load_excel(file_like)
+        except Exception as e:
+            print(f"Error loading stock file for comparison: {e}")
             return {"success": False, "error": "Could not load stock file"}, 500
         
         # Recompute matches with updated order data
@@ -2447,6 +2462,9 @@ def apply_order_changes():
         def sum_ready_kg(rows):
             return round(sum(float(r.get('stock_carton', 0) or 0) * float(r.get('stock_kg_per_ctn', 0) or 0) for r in rows), 3)
 
+        def sum_fulfillable_kg(rows):
+            return round(sum(float(r.get('can_fulfill_carton', 0) or 0) * float(r.get('order_kg_per_ctn', 0) or 0) for r in rows), 3)
+
         new_summary = {
             "total_items": len(new_result_rows),
             "full": sum(1 for r in new_result_rows if r.get('status') == 'Full'),
@@ -2456,7 +2474,8 @@ def apply_order_changes():
             "total_kg_full": sum_required_kg([r for r in new_result_rows if r.get('status') == 'Full']),
             "total_kg_not_full": sum_required_kg([r for r in new_result_rows if r.get('status') == 'Not Full']),
             "total_kg_not_have": sum_required_kg([r for r in new_result_rows if r.get('status') == 'Not have']),
-            "ready_kg": sum_ready_kg(new_result_rows)
+            "ready_kg": sum_ready_kg(new_result_rows),
+            "fulfillable_kg": sum_fulfillable_kg(new_result_rows)
         }
         
         # Create new Excel and PDF files
@@ -2579,7 +2598,7 @@ def apply_order_changes():
         except Exception as e:
             print(f"Warning: Could not update database: {e}")
         
-        # Update comparison history with applied changes
+        # Save comparison history to database only when changes are applied
         try:
             if session_id:
                 # Find order file ID
@@ -2591,17 +2610,31 @@ def apply_order_changes():
                 
                 if order_file_record:
                     order_file_id = order_file_record[0]
-                    # Update the most recent comparison history record with applied changes
-                    cursor.execute('''UPDATE file_comparison_history 
-                                     SET changes_applied = ? 
-                                     WHERE session_id = ? AND order_file_id = ? AND original_token = ?
-                                     ORDER BY created_at DESC LIMIT 1''',
-                                 (json.dumps(changes), session_id, order_file_id, original_token))
-                    conn.commit()
+                    
+                    # Get the comparison data that was used to generate these changes
+                    # We need to reconstruct it from the changes
+                    comparison_data = {
+                        'summary': {
+                            'added': len([c for c in changes if c.get('type') == 'added']),
+                            'modified': len([c for c in changes if c.get('type') == 'modified']),
+                            'deleted': len([c for c in changes if c.get('type') == 'deleted']),
+                            'unchanged': 0  # We don't track unchanged in apply changes
+                        },
+                        'changes': changes
+                    }
+                    
+                    save_file_comparison_history(
+                        session_id=session_id,
+                        order_file_id=order_file_id,
+                        original_token=original_token,
+                        batch_token=batch_token,
+                        comparison_data=comparison_data,
+                        changes_applied=changes
+                    )
                 
                 conn.close()
         except Exception as e:
-            print(f"Warning: Failed to update comparison history: {e}")
+            print(f"Warning: Failed to save comparison history: {e}")
         
         return {"success": True}
         
