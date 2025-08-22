@@ -173,6 +173,32 @@
       color: var(--text-primary);
       box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
     }
+
+    /* Files Tab Styles */
+    .file-item {
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+    
+    .file-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+      border-color: var(--bs-primary) !important;
+    }
+    
+    .file-icon i {
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    [data-bs-theme="dark"] .file-item {
+      background-color: var(--card-bg);
+      border-color: var(--border-color) !important;
+    }
+    
+    [data-bs-theme="dark"] .file-item:hover {
+      background-color: var(--bg-secondary);
+      border-color: var(--bs-primary) !important;
+    }
     
     [data-bs-theme="dark"] .alert {
       background-color: var(--bg-secondary);
@@ -218,6 +244,11 @@
           </button>
         </li>
         <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button" role="tab">
+            <i class="bi bi-folder me-1"></i>Files
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history" type="button" role="tab">
             <i class="bi bi-clock-history me-1"></i>History
           </button>
@@ -225,6 +256,11 @@
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-loading" type="button" role="tab">
             <i class="bi bi-truck me-1"></i>Loading
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-finished" type="button" role="tab">
+            <i class="bi bi-check-circle-fill me-1"></i>Finished Container
           </button>
         </li>
       </ul>
@@ -562,6 +598,92 @@
 
         </div>
 
+        <!-- Files Tab Content -->
+        <div id="tab-files" class="tab-pane fade" role="tabpanel">
+          <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-bottom">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-folder text-primary me-2"></i>Downloadable Files
+              </h5>
+            </div>
+            <div class="card-body p-0">
+              
+              <!-- Stock Files Section -->
+              <div class="border-bottom">
+                <div class="p-4">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="file-icon me-3">
+                      <i class="bi bi-database-fill text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-1 fw-bold text-success">Stock Files</h6>
+                      <p class="text-muted mb-0 small">Excel files containing inventory stock data</p>
+                    </div>
+                  </div>
+                  
+                  <div id="stock-files-container">
+                    <div class="text-center text-muted py-3">
+                      <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      Loading stock files...
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Order Files Section -->
+              <div>
+                <div class="p-4">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="file-icon me-3">
+                      <i class="bi bi-cart-fill text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-1 fw-bold text-primary">Order Files</h6>
+                      <p class="text-muted mb-0 small">Original uploads and revised versions from Editor</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Original Order Files -->
+                  <div class="mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-file-earmark text-info me-2"></i>
+                      <h6 class="mb-0 fw-semibold text-info">Original Files</h6>
+                      <span class="badge bg-info ms-2">First Upload</span>
+                    </div>
+                    <div id="original-order-files-container">
+                      <div class="text-center text-muted py-3">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Loading original order files...
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Revised Order Files -->
+                  <div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-file-earmark-arrow-up text-warning me-2"></i>
+                      <h6 class="mb-0 fw-semibold text-warning">Revised Files</h6>
+                      <span class="badge bg-warning ms-2">From Editor</span>
+                    </div>
+                    <div id="revised-order-files-container">
+                      <div class="text-center text-muted py-3">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Loading revised order files...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- History Tab Content -->
         <div id="tab-history" class="tab-pane fade" role="tabpanel">
           <div class="card shadow-sm border-0 rounded-4">
@@ -669,16 +791,7 @@
                       <i class="bi bi-truck display-4 mb-3"></i>
                       <h6>40' Reefer Container</h6>
                       <small>Refrigerated Container</small>
-                      <div class="mt-3">
-                        <div class="btn-group w-100" role="group">
-                          <button type="button" class="btn btn-outline-light btn-sm" id="auto-optimize">
-                            <i class="bi bi-gear-fill me-1"></i>Auto Optimize
-                          </button>
-                          <button type="button" class="btn btn-outline-light btn-sm" id="reset-loading">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Reset
-                          </button>
-                        </div>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>
@@ -695,7 +808,7 @@
                     </div>
                     <div class="card-body p-0">
                       <div class="table-responsive" style="max-height: 400px;">
-                        <table class="table table-hover align-middle m-0">
+                        <table class="table align-middle m-0">
                           <thead class="table-light sticky-top">
                             <tr>
                               <th class="text-nowrap">Order File</th>
@@ -721,7 +834,7 @@
                     </div>
                     <div class="card-body p-0">
                       <div class="table-responsive" style="max-height: 400px;">
-                        <table class="table table-hover align-middle m-0">
+                        <table class="table align-middle m-0">
                           <thead class="table-light sticky-top">
                             <tr>
                               <th class="text-nowrap">Order File</th>
@@ -737,11 +850,43 @@
                       <div id="no-loaded-orders" class="text-center p-4 text-muted">
                         <i class="bi bi-inbox display-4 mb-2"></i>
                         <p>No orders loaded yet</p>
-                        <small>Click "Load" on available orders to add them to the container</small>
+                        <small>Click "Calculate" on available orders to add them to the container</small>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-finished" class="tab-pane fade" role="tabpanel">
+          <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-bottom">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>Finished Container
+              </h5>
+              <p class="text-muted small mb-0">Completed orders ready for processing</p>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="text-nowrap">Order File</th>
+                      <th class="text-end text-nowrap">Weight (kg)</th>
+                      <th class="text-center text-nowrap">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="finished-orders-list">
+                    <!-- Finished orders will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="no-finished-orders" class="text-center p-4 text-muted">
+                <i class="bi bi-inbox display-4 mb-2"></i>
+                <p>No finished orders yet</p>
+                <small>Click "Finish" on available orders to move them here</small>
               </div>
             </div>
           </div>
@@ -1171,10 +1316,42 @@
           initializeLoadingTab();
         });
       }
+       
+       // Initialize finished container tab
+       const finishedTab = document.querySelector('[data-bs-target="#tab-finished"]');
+       if (finishedTab) {
+         finishedTab.addEventListener('shown.bs.tab', function() {
+           initializeFinishedTab();
+         });
+       }
       
       // Also initialize loading when page loads if loading tab is active
       if (document.querySelector('#tab-loading.active')) {
         initializeLoadingTab();
+      }
+       
+       // Also initialize finished when page loads if finished tab is active
+       if (document.querySelector('#tab-finished.active')) {
+         initializeFinishedTab();
+       }
+       
+       // Initialize finished orders on page load regardless of active tab
+       // This ensures data is available when switching to the tab
+       setTimeout(() => {
+         initializeFinishedTab();
+       }, 500);
+
+      // Initialize Files tab
+      const filesTab = document.querySelector('[data-bs-target="#tab-files"]');
+      if (filesTab) {
+        filesTab.addEventListener('shown.bs.tab', function() {
+          loadFilesData();
+        });
+      }
+      
+      // Also load files when page loads if files tab is active
+      if (document.querySelector('#tab-files.active')) {
+        loadFilesData();
       }
     });
 
@@ -1182,6 +1359,7 @@
     const CONTAINER_MAX_CAPACITY = 28350; // kg
     let availableOrders = [];
     let loadedOrders = [];
+    let finishedOrders = [];
     let currentLoadedWeight = 0;
 
     function initializeLoadingTab() {
@@ -1202,15 +1380,39 @@
       ];
       
       loadedOrders = [];
+      finishedOrders = [];
       currentLoadedWeight = 0;
+      
+             // Load existing finished orders from database
+       {% if finished_orders %}
+       finishedOrders = [
+         {% for order in finished_orders %}
+         {
+           token: '{{ order.token }}',
+           name: '{{ order.name }}',
+           weight: {{ order.weight }},
+           finished_at: '{{ order.finished_at }}',
+           // Add original order data
+           ...findOriginalOrderData('{{ order.token }}')
+         }{% if not loop.last %},{% endif %}
+         {% endfor %}
+       ];
+       
+       // Remove finished orders from available orders
+       finishedOrders.forEach(finishedOrder => {
+         const index = availableOrders.findIndex(order => order.token === finishedOrder.token);
+         if (index !== -1) {
+           availableOrders.splice(index, 1);
+         }
+       });
+       {% endif %}
       
       renderAvailableOrders();
       renderLoadedOrders();
+      renderFinishedOrders();
       updateContainerStatus();
       
-      // Event listeners
-      document.getElementById('auto-optimize').addEventListener('click', autoOptimizeLoading);
-      document.getElementById('reset-loading').addEventListener('click', resetLoading);
+             // Event listeners removed for auto-optimize and reset-loading
     }
 
     function renderAvailableOrders() {
@@ -1220,7 +1422,7 @@
       availableOrders.forEach(order => {
         const canLoad = (currentLoadedWeight + order.weight) <= CONTAINER_MAX_CAPACITY;
         const row = document.createElement('tr');
-        row.className = canLoad ? '' : 'table-warning';
+        row.className = '';
         
         row.innerHTML = `
           <td>
@@ -1241,11 +1443,16 @@
             <br><small class="text-muted">(Full KG)</small>
           </td>
           <td class="text-center">
+            <div class="btn-group-vertical gap-1">
+              <button class="btn btn-sm btn-outline-primary" onclick="finishOrder('${order.token}')">
+                <i class="bi bi-check-circle me-1"></i>Finish
+              </button>
             <button class="btn btn-sm ${canLoad ? 'btn-success' : 'btn-outline-secondary'}" 
-                    onclick="loadOrder('${order.token}')" 
+                      onclick="calculateOrder('${order.token}')" 
                     ${canLoad ? '' : 'disabled'}>
-              <i class="bi bi-plus-circle me-1"></i>Load
+                <i class="bi bi-calculator me-1"></i>Calculate
             </button>
+            </div>
           </td>
         `;
         
@@ -1364,55 +1571,250 @@
       updateContainerStatus();
     }
 
-    function autoOptimizeLoading() {
-      // Reset to start fresh
-      resetLoading();
-      
-      // Sort available orders by weight (descending) - First Fit Decreasing algorithm
-      availableOrders.sort((a, b) => b.weight - a.weight);
-      
-      // Load orders that fit
-      for (let i = availableOrders.length - 1; i >= 0; i--) {
-        const order = availableOrders[i];
-        if (currentLoadedWeight + order.weight <= CONTAINER_MAX_CAPACITY) {
-          loadOrder(order.token);
-        }
+    
+
+         function finishOrder(token) {
+       console.log('finishOrder called with token:', token);
+       console.log('Current availableOrders:', availableOrders);
+       
+       const orderIndex = availableOrders.findIndex(order => order.token === token);
+       console.log('Order found at index:', orderIndex);
+       
+       if (orderIndex !== -1) {
+         const order = availableOrders.splice(orderIndex, 1)[0];
+         finishedOrders.push(order);
+         
+         console.log('Order moved to finished:', order);
+         console.log('New finishedOrders array:', finishedOrders);
+         
+         // Save to database first
+         saveFinishedOrder(order, 'save');
+         
+         // Re-render all sections
+         renderAvailableOrders();
+         renderFinishedOrders();
+         
+         console.log('Rendering complete');
+         
+         // Also update the finished tab if it's currently active
+         if (document.querySelector('#tab-finished.active')) {
+      setTimeout(() => {
+             loadFinishedOrdersFromServer();
+           }, 1000); // Give time for database save to complete
+         }
+       } else {
+         console.error('Order not found in availableOrders for token:', token);
+       }
+     }
+
+    function calculateOrder(token) {
+      // Only allow one order in loaded section
+      if (loadedOrders.length > 0) {
+        alert('Only one order can be calculated at a time. Please finish or remove the current order first.');
+        return;
       }
       
-      // Show optimization result
-      const optimizationMessage = `Optimization complete! Loaded ${loadedOrders.length} orders with ${currentLoadedWeight.toLocaleString()} kg total weight.`;
-      
-      // Create a temporary alert
-      const alertDiv = document.createElement('div');
-      alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
-      alertDiv.innerHTML = `
-        <i class="bi bi-check-circle me-2"></i>${optimizationMessage}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      
-      const loadingTabContent = document.querySelector('#tab-loading .card-body');
-      loadingTabContent.insertBefore(alertDiv, loadingTabContent.firstChild);
-      
-      // Auto dismiss after 5 seconds
-      setTimeout(() => {
-        if (alertDiv.parentNode) {
-          alertDiv.remove();
-        }
-      }, 5000);
-    }
-
-    function resetLoading() {
-      // Move all loaded orders back to available
-      availableOrders = availableOrders.concat(loadedOrders);
-      loadedOrders = [];
-      currentLoadedWeight = 0;
-      
-      // Sort available orders by weight (descending)
-      availableOrders.sort((a, b) => b.weight - a.weight);
+      const orderIndex = availableOrders.findIndex(order => order.token === token);
+      if (orderIndex !== -1) {
+        const order = availableOrders.splice(orderIndex, 1)[0];
+        loadedOrders.push(order);
+        currentLoadedWeight += order.weight;
       
       renderAvailableOrders();
       renderLoadedOrders();
       updateContainerStatus();
+      }
+    }
+
+         function renderFinishedOrders() {
+       console.log('renderFinishedOrders called');
+       console.log('Current finishedOrders:', finishedOrders);
+       
+       const tbody = document.getElementById('finished-orders-list');
+       const noOrdersDiv = document.getElementById('no-finished-orders');
+       
+       if (!tbody) {
+         console.error('finished-orders-list tbody element not found');
+         return;
+       }
+       
+       tbody.innerHTML = '';
+       
+       if (finishedOrders.length === 0) {
+         console.log('No finished orders, showing empty message');
+         if (noOrdersDiv) noOrdersDiv.style.display = 'block';
+       } else {
+         console.log(`Rendering ${finishedOrders.length} finished orders`);
+         if (noOrdersDiv) noOrdersDiv.style.display = 'none';
+         
+         finishedOrders.forEach((order, index) => {
+           console.log(`Rendering order ${index + 1}:`, order);
+           
+           const row = document.createElement('tr');
+           row.innerHTML = `
+             <td>
+               <div class="d-flex align-items-center">
+                 <div class="me-2">
+                   <span class="badge bg-success">${index + 1}</span>
+                 </div>
+                 <div>
+                   <div class="fw-medium text-break">${order.name}</div>
+                   <small class="text-muted">
+                     Full: ${order.fullItems || 'N/A'} | Not Full: ${order.notFullItems || 'N/A'} | Not Have: ${order.notHaveItems || 'N/A'}
+                   </small>
+                   <small class="text-info d-block">
+                     Full KG: ${order.weight.toLocaleString()} kg | Stock: ${(order.readyKg || 0).toLocaleString()} kg | Order: ${(order.totalOrderWeight || 0).toLocaleString()} kg
+                   </small>
+                 </div>
+               </div>
+             </td>
+             <td class="text-end">
+               <span class="fw-bold text-success">${order.weight.toLocaleString()}</span>
+               <br><small class="text-muted">(Full KG)</small>
+             </td>
+             <td class="text-center">
+               <button class="btn btn-sm btn-outline-warning" onclick="undoFinishOrder('${order.token}')">
+                 <i class="bi bi-arrow-counterclockwise me-1"></i>Undo
+               </button>
+             </td>
+           `;
+           
+           tbody.appendChild(row);
+           console.log(`Row ${index + 1} added to table`);
+         });
+         
+         console.log('All finished orders rendered successfully');
+       }
+     }
+
+    function undoFinishOrder(token) {
+      const orderIndex = finishedOrders.findIndex(order => order.token === token);
+      if (orderIndex !== -1) {
+        const order = finishedOrders.splice(orderIndex, 1)[0];
+        availableOrders.push(order);
+        
+        // Remove from database
+        saveFinishedOrder(order, 'remove');
+        
+        renderAvailableOrders();
+        renderFinishedOrders();
+      }
+    }
+
+    function saveFinishedOrder(order, action = 'save') {
+      const batchToken = '{{ batch_token }}';
+      
+      console.log('Saving finished order to database:', {
+        batch_token: batchToken,
+        order_token: order.token,
+        order_name: order.name,
+        weight: order.weight,
+        action: action
+      });
+      
+      fetch('/save-finished-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          batch_token: batchToken,
+          order_token: order.token,
+          order_name: order.name,
+          weight: order.weight,
+          action: action
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Database response:', data);
+        if (!data.success) {
+          console.error('Failed to save finished order:', data.error);
+        } else {
+          console.log('Successfully saved finished order to database');
+        }
+      })
+      .catch(error => {
+        console.error('Error saving finished order:', error);
+      });
+    }
+
+    function initializeFinishedTab() {
+      console.log('Initializing Finished Container tab');
+      
+      // Load finished orders from server
+      loadFinishedOrdersFromServer();
+    }
+
+    function loadFinishedOrdersFromServer() {
+      const batchToken = '{{ batch_token }}';
+      
+      console.log('Loading finished orders from server for batch:', batchToken);
+      
+      fetch(`/get-finished-orders/${batchToken}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Server response for finished orders:', data);
+          
+          if (data.success && data.finished_orders) {
+            // Update the finishedOrders array
+            finishedOrders = data.finished_orders.map(order => ({
+              token: order.token,
+              name: order.name,
+              weight: order.weight,
+              finished_at: order.finished_at,
+              // Try to find original order data from availableOrders for additional details
+              ...findOriginalOrderData(order.token)
+            }));
+            
+            console.log('Updated finishedOrders:', finishedOrders);
+            
+            // Remove finished orders from available orders if they exist there
+            finishedOrders.forEach(finishedOrder => {
+              const index = availableOrders.findIndex(order => order.token === finishedOrder.token);
+              if (index !== -1) {
+                console.log('Removing finished order from available orders:', finishedOrder.token);
+                availableOrders.splice(index, 1);
+              }
+            });
+            
+            // Re-render the finished orders table
+            renderFinishedOrders();
+          } else {
+            console.log('No finished orders found or error:', data.error);
+            finishedOrders = [];
+            renderFinishedOrders();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading finished orders:', error);
+          finishedOrders = [];
+          renderFinishedOrders();
+        });
+    }
+
+    function findOriginalOrderData(token) {
+      // Try to find the original order data from the items array
+      const originalOrder = [
+        {% for item in items %}
+        {
+          token: '{{ item.token }}',
+          fullItems: {{ item.summary.full }},
+          notFullItems: {{ item.summary.not_full }},
+          notHaveItems: {{ item.summary.not_have }},
+          readyKg: {{ item.summary.ready_kg }},
+          totalOrderWeight: {{ item.summary.total_kg_all }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ].find(order => order.token === token);
+      
+      return originalOrder || {
+        fullItems: 0,
+        notFullItems: 0,
+        notHaveItems: 0,
+        readyKg: 0,
+        totalOrderWeight: 0
+      };
     }
 
     function loadComparisonHistory() {
@@ -1568,6 +1970,193 @@
 
     // Store comparison history data globally for modal access
     let comparisonHistoryData = [];
+
+    // Files Tab Functionality
+    function loadFilesData() {
+      const batchToken = '{{ batch_token }}';
+      
+      // Show loading spinners
+      document.getElementById('stock-files-container').innerHTML = 
+        '<div class="text-center text-muted py-3">' +
+          '<div class="spinner-border spinner-border-sm me-2" role="status">' +
+            '<span class="visually-hidden">Loading...</span>' +
+          '</div>' +
+          'Loading stock files...' +
+        '</div>';
+      
+      document.getElementById('original-order-files-container').innerHTML = 
+        '<div class="text-center text-muted py-3">' +
+          '<div class="spinner-border spinner-border-sm me-2" role="status">' +
+            '<span class="visually-hidden">Loading...</span>' +
+          '</div>' +
+          'Loading original order files...' +
+        '</div>';
+      
+      document.getElementById('revised-order-files-container').innerHTML = 
+        '<div class="text-center text-muted py-3">' +
+          '<div class="spinner-border spinner-border-sm me-2" role="status">' +
+            '<span class="visually-hidden">Loading...</span>' +
+          '</div>' +
+          'Loading revised order files...' +
+        '</div>';
+      
+      // Fetch files data
+      fetch('/get-batch-files/' + batchToken)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayStockFiles(data.stock_files || []);
+            displayOriginalOrderFiles(data.original_order_files || []);
+            displayRevisedOrderFiles(data.revised_order_files || []);
+          } else {
+            showFilesError('Error loading files: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(error => {
+          console.error('Error loading files:', error);
+          showFilesError('Error loading files: ' + error.message);
+        });
+    }
+    
+    function displayStockFiles(stockFiles) {
+      const container = document.getElementById('stock-files-container');
+      
+      if (stockFiles.length === 0) {
+        container.innerHTML = 
+          '<div class="text-center text-muted py-3">' +
+            '<i class="bi bi-inbox" style="font-size: 2rem;"></i>' +
+            '<p class="mb-0 mt-2">No stock files found</p>' +
+          '</div>';
+        return;
+      }
+      
+      container.innerHTML = stockFiles.map(file => 
+        '<div class="file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2 hover-shadow">' +
+          '<div class="d-flex align-items-center">' +
+            '<i class="bi bi-file-earmark-excel text-success me-3" style="font-size: 1.5rem;"></i>' +
+            '<div>' +
+              '<div class="fw-medium">' + file.original_filename + '</div>' +
+              '<div class="text-muted small">' +
+                formatFileSize(file.file_size) + ' • ' +
+                'Uploaded ' + formatDate(file.uploaded_at) +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="d-flex gap-2">' +
+            '<button class="btn btn-outline-success btn-sm" onclick="downloadFile(\'' + file.id + '\', \'stock\')" title="Download">' +
+              '<i class="bi bi-download me-1"></i>Download' +
+            '</button>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+    }
+    
+    function displayOriginalOrderFiles(orderFiles) {
+      const container = document.getElementById('original-order-files-container');
+      
+      if (orderFiles.length === 0) {
+        container.innerHTML = 
+          '<div class="text-center text-muted py-3">' +
+            '<i class="bi bi-inbox" style="font-size: 2rem;"></i>' +
+            '<p class="mb-0 mt-2">No original order files found</p>' +
+          '</div>';
+        return;
+      }
+      
+      container.innerHTML = orderFiles.map(file => 
+        '<div class="file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2 hover-shadow">' +
+          '<div class="d-flex align-items-center">' +
+            '<i class="bi bi-file-earmark-excel text-info me-3" style="font-size: 1.5rem;"></i>' +
+            '<div>' +
+              '<div class="fw-medium">' + file.original_filename + '</div>' +
+              '<div class="text-muted small">' +
+                formatFileSize(file.file_size) + ' • ' +
+                'Uploaded ' + formatDate(file.uploaded_at) +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="d-flex gap-2">' +
+            '<button class="btn btn-outline-info btn-sm" onclick="downloadFile(\'' + file.id + '\', \'order\')" title="Download">' +
+              '<i class="bi bi-download me-1"></i>Download' +
+            '</button>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+    }
+    
+    function displayRevisedOrderFiles(revisedFiles) {
+      const container = document.getElementById('revised-order-files-container');
+      
+      if (revisedFiles.length === 0) {
+        container.innerHTML = 
+          '<div class="text-center text-muted py-3">' +
+            '<i class="bi bi-inbox" style="font-size: 2rem;"></i>' +
+            '<p class="mb-0 mt-2">No revised files found</p>' +
+            '<p class="text-muted small">Revised files are created when you use the Editor tab</p>' +
+          '</div>';
+        return;
+      }
+      
+      container.innerHTML = revisedFiles.map(file => 
+        '<div class="file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2 hover-shadow">' +
+          '<div class="d-flex align-items-center">' +
+            '<i class="bi bi-file-earmark-excel text-warning me-3" style="font-size: 1.5rem;"></i>' +
+            '<div>' +
+              '<div class="fw-medium">' + file.original_filename + '</div>' +
+              '<div class="text-muted small">' +
+                formatFileSize(file.file_size) + ' • ' +
+                'Revised ' + formatDate(file.uploaded_at) +
+                (file.revision_note ? ' • ' + file.revision_note : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="d-flex gap-2">' +
+            '<button class="btn btn-outline-warning btn-sm" onclick="downloadFile(\'' + file.id + '\', \'order\')" title="Download">' +
+              '<i class="bi bi-download me-1"></i>Download' +
+            '</button>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+    }
+    
+    function showFilesError(message) {
+      const containers = [
+        'stock-files-container',
+        'original-order-files-container', 
+        'revised-order-files-container'
+      ];
+      
+      containers.forEach(containerId => {
+        document.getElementById(containerId).innerHTML = 
+          '<div class="text-center text-danger py-3">' +
+            '<i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>' +
+            '<p class="mb-0 mt-2">' + message + '</p>' +
+          '</div>';
+      });
+    }
+    
+    function downloadFile(fileId, fileType) {
+      // Create a temporary link to trigger download
+      const link = document.createElement('a');
+      link.href = '/download-file/' + fileId + '?type=' + fileType;
+      link.download = '';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
 
     function showComparisonModal(record, comparisonData) {
       // Set modal header info
@@ -1934,6 +2523,10 @@
           if (data.success) {
             // Show success message
             alert('Changes applied successfully! The page will refresh to show updated results.');
+            // Refresh history tab data if it's currently visible
+            if (document.querySelector('#tab-history.active')) {
+              loadComparisonHistory();
+            }
             // Refresh the page to show updated results
             window.location.reload();
           } else {

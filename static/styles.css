@@ -410,8 +410,6 @@ body {
   white-space: normal;
 }
 
-/* Removed hover effects for better mobile experience */
-
 /* Status-specific table rows */
 .table tbody tr.status-full td,
 .table tbody tr.status-can-process td {
@@ -575,8 +573,6 @@ body {
   border-radius: var(--radius-sm);
   transition: background-color 0.2s ease;
 }
-
-/* Removed hover effects for better mobile experience */
 
 .order-name {
   font-weight: var(--font-weight-semibold);

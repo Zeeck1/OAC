@@ -75,6 +75,8 @@ def init_database():
             original_filename TEXT NOT NULL,
             stored_filename TEXT NOT NULL,
             file_size INTEGER NOT NULL,
+            is_revision BOOLEAN DEFAULT 0, -- 0 for original, 1 for revised
+            revision_note TEXT, -- Note about the revision
             uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (session_id) REFERENCES processing_sessions (id)
         )
@@ -130,6 +132,21 @@ def init_database():
          )
      ''')
      
+    # Create finished orders table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS finished_orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            batch_token TEXT NOT NULL,
+            order_token TEXT NOT NULL,
+            order_name TEXT NOT NULL,
+            weight REAL NOT NULL,
+            finished_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(session_id, order_token),
+            FOREIGN KEY (session_id) REFERENCES processing_sessions (id)
+        )
+    ''')
+     
     # Create file comparison history table
     cursor.execute('''
          CREATE TABLE IF NOT EXISTS file_comparison_history (
@@ -155,6 +172,15 @@ def init_database():
         # Column doesn't exist, add it
         cursor.execute("ALTER TABLE processing_results ADD COLUMN order_file_id INTEGER")
         print("Added order_file_id column to processing_results table")
+    
+    # Check if new columns exist in uploaded_files table, if not add them (migration)
+    try:
+        cursor.execute("SELECT is_revision, revision_note FROM uploaded_files LIMIT 1")
+    except sqlite3.OperationalError:
+        # Columns don't exist, add them
+        cursor.execute("ALTER TABLE uploaded_files ADD COLUMN is_revision BOOLEAN DEFAULT 0")
+        cursor.execute("ALTER TABLE uploaded_files ADD COLUMN revision_note TEXT")
+        print("Added revision tracking columns to uploaded_files table")
     
     conn.commit()
     conn.close()
@@ -304,7 +330,7 @@ def upsert_fish_decision(session_id: int, fish_name: str, packed_size: str, orde
     conn.commit()
     conn.close()
 
-def save_uploaded_file(session_id: int, file_type: str, original_filename: str, file_storage) -> str:
+def save_uploaded_file(session_id: int, file_type: str, original_filename: str, file_storage, is_revision: bool = False, revision_note: str = None) -> str:
     """Save uploaded file to disk and record in database."""
     # Generate unique filename
     file_ext = os.path.splitext(original_filename)[1]
@@ -320,14 +346,42 @@ def save_uploaded_file(session_id: int, file_type: str, original_filename: str, 
     cursor = conn.cursor()
     
     cursor.execute('''
-        INSERT INTO uploaded_files (session_id, file_type, original_filename, stored_filename, file_size)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (session_id, file_type, original_filename, stored_filename, file_size))
+        INSERT INTO uploaded_files (session_id, file_type, original_filename, stored_filename, file_size, is_revision, revision_note)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (session_id, file_type, original_filename, stored_filename, file_size, is_revision, revision_note))
     
     conn.commit()
     conn.close()
     
     return stored_filename
+
+def save_revised_file(session_id: int, original_filename: str, file_path: str, revision_note: str = None) -> int:
+    """Save a revised file that was created programmatically (not uploaded)."""
+    import os
+    
+    # Generate unique stored filename
+    file_ext = os.path.splitext(original_filename)[1]
+    stored_filename = f"{uuid.uuid4().hex}{file_ext}"
+    new_file_path = os.path.join(UPLOAD_FOLDER, stored_filename)
+    
+    # Copy the file to uploads folder with new name
+    shutil.copy2(file_path, new_file_path)
+    file_size = os.path.getsize(new_file_path)
+    
+    # Record in database as revision
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT INTO uploaded_files (session_id, file_type, original_filename, stored_filename, file_size, is_revision, revision_note)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (session_id, 'order', original_filename, stored_filename, file_size, True, revision_note or 'Revised from Editor'))
+    
+    file_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    
+    return file_id
 
 def save_processing_results(session_id: int, results: List[Dict[str, Any]], order_file_id: int = None):
     """Save processing results to database."""
@@ -383,6 +437,35 @@ def get_recent_sessions(limit: int = 10) -> List[Dict[str, Any]]:
     sessions = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return sessions
+
+def get_finished_orders_for_batch(batch_token: str) -> List[Dict[str, Any]]:
+    """Return list of finished orders for a batch token."""
+    finished_orders = []
+    session_id = get_session_id_by_batch_token(batch_token)
+    if not session_id:
+        return finished_orders
+    
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT order_token, order_name, weight, finished_at
+        FROM finished_orders
+        WHERE session_id = ?
+        ORDER BY finished_at DESC
+    ''', (session_id,))
+    
+    for row in cursor.fetchall():
+        finished_orders.append({
+            'token': row['order_token'],
+            'name': row['order_name'],
+            'weight': row['weight'],
+            'finished_at': row['finished_at']
+        })
+    
+    conn.close()
+    return finished_orders
 
 def get_session_id_by_batch_token(batch_token: str) -> Optional[int]:
     conn = sqlite3.connect(DATABASE_PATH)
@@ -478,6 +561,14 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
         return None
     
     batch_token = session['batch_token']
+    
+    # Check if batch is already in memory with updated data - if so, just return the token
+    if batch_token in BATCH_STORE and BATCH_STORE[batch_token]:
+        # Verify all tokens still exist in RESULT_STORE
+        tokens_valid = all(token in RESULT_STORE for token in BATCH_STORE[batch_token])
+        if tokens_valid:
+            return batch_token  # Return existing batch token without reloading
+    
     stock_name = session.get('stock_filename', 'Unknown Stock')
     
     # Get order files and reprocess them from the actual stored files
@@ -503,7 +594,7 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
         with open(stock_file_path, 'rb') as f:
             file_like = io.BytesIO(f.read())
             file_like.filename = stock_file_path
-            stock_ds = load_excel(file_like)
+            stock_ds = load_tabular(file_like)
     except Exception as e:
         print(f"Error loading stock file: {e}")
         conn.close()
@@ -517,33 +608,47 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
     ''', (session['id'],))
     order_files = cursor.fetchall()
     
-    conn.close()
-    
-    # Process each order file by reloading from the stored file
+    # Get processed results from database instead of reprocessing files
     files_data = {}
     for order_file in order_files:
         try:
-            # Load the order file from disk (this will include any updates)
-            order_file_path = os.path.join(UPLOAD_FOLDER, order_file['stored_filename'])
-            with open(order_file_path, 'rb') as f:
-                file_like = io.BytesIO(f.read())
-                file_like.filename = order_file['original_filename']
-                order_ds = load_tabular(file_like)
+            # Get processed results from database for this order file
+            cursor.execute('''
+                SELECT * FROM processing_results
+                WHERE session_id = ? AND order_file_id = ?
+                ORDER BY id DESC
+            ''', (session['id'], order_file['id']))
             
-            # Set the original filename for display purposes
-            order_ds.name = order_file['original_filename']
+            db_results = [dict(row) for row in cursor.fetchall()]
             
-            # Recompute matches using current stock data
-            result_rows = compute_matches(stock_ds.rows, order_ds.rows)
+            # Convert database results to the expected format
+            result_rows = []
+            for db_result in db_results:
+                result_row = {
+                    'fish name': db_result.get('fish_name', ''),
+                    'packed size': db_result.get('packed_size', ''),
+                    'order_carton': db_result.get('order_carton', 0),
+                    'stock_carton': db_result.get('stock_carton', 0),
+                    'order_kg_per_ctn': db_result.get('order_kg_per_ctn', 0),
+                    'stock_kg_per_ctn': db_result.get('stock_kg_per_ctn', 0),
+                    'balance_stock_carton': db_result.get('balance_stock_carton', 0),
+                    'mc_to_give': db_result.get('mc_to_give', 0),
+                    'can_fulfill_carton': db_result.get('can_fulfill_carton', 0),
+                    'shortfall': db_result.get('shortfall', 0),
+                    'status': db_result.get('status', ''),
+                    'required_kg': db_result.get('required_kg', 0),
+                    'matched_by': 'Historical Data'  # Add indicator this is from DB
+                }
+                result_rows.append(result_row)
             
             files_data[order_file['id']] = {
                 'filename': order_file['original_filename'],
                 'results': result_rows,
-                'order_data': order_ds.rows  # Store original order data
+                'order_data': []  # We don't need original order data for historical sessions
             }
             
         except Exception as e:
-            print(f"Warning: Failed to reload order file {order_file['original_filename']}: {e}")
+            print(f"Warning: Failed to load database results for order file {order_file['original_filename']}: {e}")
             # Fallback to empty results
             files_data[order_file['id']] = {
                 'filename': order_file['original_filename'],
@@ -551,7 +656,7 @@ def restore_batch_session_to_memory(session: Dict[str, Any]) -> str:
                 'order_data': []
             }
     
-
+    conn.close()
     
     # Create tokens for each order file and populate RESULT_STORE
     token_list = []
@@ -1014,19 +1119,76 @@ def rows_to_excel_bytes(rows: List[Dict[str, Any]]) -> bytes:
 
 def rows_to_pdf_bytes(rows: List[Dict[str, Any]]) -> bytes:
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.pagesizes import A3, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+    from reportlab.platypus.tableofcontents import TableOfContents
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.platypus.frames import Frame
+    from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
+    from reportlab.platypus.flowables import PageBreak
+    import os
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
-    styles = getSampleStyleSheet()
+    
+    # Custom function to draw header and footer
+    def draw_page_decorations(canvas, doc):
+        pagesize = landscape(A3)
+        
+        # Header with images
+        canvas.saveState()
+        
+        # Draw header images if they exist
+        oac_path = os.path.join(os.path.dirname(__file__), 'static', 'images', 'OAC.png')
+        logo_thai_path = os.path.join(os.path.dirname(__file__), 'static', 'images', 'logo-thai.png')
+        
+        # Left header image (OAC.png)
+        if os.path.exists(oac_path):
+            try:
+                canvas.drawImage(oac_path, 30*mm, pagesize[1]-30*mm, width=40*mm, height=20*mm, preserveAspectRatio=True)
+            except Exception:
+                pass
+        
+        # Right header image (logo-thai.png)  
+        if os.path.exists(logo_thai_path):
+            try:
+                canvas.drawImage(logo_thai_path, pagesize[0]-70*mm, pagesize[1]-30*mm, width=40*mm, height=20*mm, preserveAspectRatio=True)
+            except Exception:
+                pass
+        
+        # Header title in center
+        canvas.setFont("Helvetica-Bold", 16)
+        canvas.drawCentredString(pagesize[0]/2, pagesize[1]-20*mm, "Order Availability Result")
+        
+        # Header line
+        canvas.setStrokeColor(colors.grey)
+        canvas.line(20*mm, pagesize[1]-35*mm, pagesize[0]-20*mm, pagesize[1]-35*mm)
+        
+        # Footer
+        canvas.setFont("Helvetica", 9)
+        
+        # Company name on left
+        canvas.drawString(25*mm, 10*mm, "C.K Thailand")
+        
+        # Page number on right
+        page_num = canvas.getPageNumber()
+        canvas.drawRightString(pagesize[0]-25*mm, 10*mm, f"Page {page_num}")
+        
+        # Footer line
+        canvas.setStrokeColor(colors.grey)
+        canvas.line(20*mm, 15*mm, pagesize[0]-20*mm, 15*mm)
+        
+        canvas.restoreState()
+
+    # Use A3 landscape for more space with simple document
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A3), leftMargin=20*mm, rightMargin=20*mm, 
+                          topMargin=40*mm, bottomMargin=20*mm)
+    
     story = []
+    story.append(Spacer(1, 10*mm))
 
-    title = Paragraph("Order Availability Result", styles["Heading2"])
-    story.append(title)
-    story.append(Spacer(1, 10))
-
+    # Complete headers with all columns
     headers = [
         "Fish Name",
         "Packed Size",
@@ -1037,36 +1199,222 @@ def rows_to_pdf_bytes(rows: List[Dict[str, Any]]) -> bytes:
         "Balance Stock CTN",
         "Can Fulfill",
         "Shortfall",
-        "Status",
+        "Required KG",
+        "Status"
     ]
-    data = [headers]
+    
+    # Build data rows
+    styles = getSampleStyleSheet()
+    
+    # Define custom paragraph styles for text wrapping
+    text_style = ParagraphStyle(
+        'TableText',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=12,
+        alignment=TA_LEFT,
+        wordWrap='CJK'
+    )
+    
+    number_style = ParagraphStyle(
+        'TableNumber',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=12,
+        alignment=TA_RIGHT,
+        wordWrap='CJK'
+    )
+    
+    header_style = ParagraphStyle(
+        'TableHeader',
+        parent=styles['Normal'],
+        fontSize=11,
+        leading=14,
+        alignment=TA_CENTER,
+        textColor=colors.white,
+        fontName='Helvetica-Bold',
+        wordWrap='CJK'
+    )
+    
+    # Status column styles with colors
+    status_full_style = ParagraphStyle(
+        'StatusFull',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=12,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#059669"),  # Green
+        wordWrap='CJK'
+    )
+    
+    status_partial_style = ParagraphStyle(
+        'StatusPartial',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=12,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#d97706"),  # Orange
+        wordWrap='CJK'
+    )
+    
+    status_none_style = ParagraphStyle(
+        'StatusNone',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=12,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#dc2626"),  # Red
+        wordWrap='CJK'
+    )
+    
+    # Convert headers to wrapped paragraphs
+    wrapped_headers = [Paragraph(str(header), header_style) for header in headers]
+    data = [wrapped_headers]
+    
+    # Initialize totals
+    totals = {
+        'order_carton': 0,
+        'stock_carton': 0,
+        'order_kg_per_ctn': 0,
+        'stock_kg_per_ctn': 0,
+        'balance_stock_carton': 0,
+        'can_fulfill_carton': 0,
+        'shortfall': 0,
+        'required_kg': 0
+    }
+    
     for r in rows:
-        data.append([
-            r.get("fish name", ""),
-            r.get("packed size", ""),
-            r.get("order_carton", 0),
-            r.get("stock_carton", 0),
-            r.get("order_kg_per_ctn", 0),
-            r.get("stock_kg_per_ctn", 0),
-            r.get("balance_stock_carton", 0),
-            r.get("can_fulfill_carton", 0),
-            r.get("shortfall", 0),
-            r.get("status", ""),
-        ])
+        # Add numeric values to totals
+        totals['order_carton'] += float(r.get("order_carton", 0) or 0)
+        totals['stock_carton'] += float(r.get("stock_carton", 0) or 0)
+        totals['order_kg_per_ctn'] += float(r.get("order_kg_per_ctn", 0) or 0)
+        totals['stock_kg_per_ctn'] += float(r.get("stock_kg_per_ctn", 0) or 0)
+        totals['balance_stock_carton'] += float(r.get("balance_stock_carton", 0) or 0)
+        totals['can_fulfill_carton'] += float(r.get("can_fulfill_carton", 0) or 0)
+        totals['shortfall'] += float(r.get("shortfall", 0) or 0)
+        totals['required_kg'] += float(r.get("required_kg", 0) or 0)
+        
+        # Determine status style based on status value
+        status_text = str(r.get("status", "")).lower()
+        if 'full' in status_text and 'not full' not in status_text:
+            status_style = status_full_style
+        elif 'not full' in status_text:
+            status_style = status_partial_style
+        elif 'not have' in status_text:
+            status_style = status_none_style
+        else:
+            status_style = text_style
+        
+        # Create wrapped paragraphs for each cell
+        row_data = [
+            Paragraph(str(r.get("fish name", "")), text_style),
+            Paragraph(str(r.get("packed size", "")), text_style),
+            Paragraph(str(r.get("order_carton", 0)), number_style),
+            Paragraph(str(r.get("stock_carton", 0)), number_style),
+            Paragraph(str(round(float(r.get("order_kg_per_ctn", 0) or 0), 2)), number_style),
+            Paragraph(str(round(float(r.get("stock_kg_per_ctn", 0) or 0), 2)), number_style),
+            Paragraph(str(r.get("balance_stock_carton", 0)), number_style),
+            Paragraph(str(r.get("can_fulfill_carton", 0)), number_style),
+            Paragraph(str(r.get("shortfall", 0)), number_style),
+            Paragraph(str(round(float(r.get("required_kg", 0) or 0), 2)), number_style),
+            Paragraph(str(r.get("status", "")), status_style)
+        ]
+        data.append(row_data)
 
-    table = Table(data, repeatRows=1)
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#fcfcfc")]),
-    ]))
+    # Add totals row with paragraphs
+    totals_style = ParagraphStyle(
+        'TotalsText',
+        parent=styles['Normal'],
+        fontSize=11,
+        leading=14,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor("#1e40af"),
+        wordWrap='CJK'
+    )
+    
+    totals_number_style = ParagraphStyle(
+        'TotalsNumber',
+        parent=styles['Normal'],
+        fontSize=11,
+        leading=14,
+        alignment=TA_RIGHT,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor("#1e40af"),
+        wordWrap='CJK'
+    )
+    
+    totals_row = [
+        Paragraph("TOTAL", totals_style),
+        Paragraph("", totals_style),
+        Paragraph(str(round(totals['order_carton'])), totals_number_style),
+        Paragraph(str(round(totals['stock_carton'])), totals_number_style),
+        Paragraph(str(round(totals['order_kg_per_ctn'], 2)), totals_number_style),
+        Paragraph(str(round(totals['stock_kg_per_ctn'], 2)), totals_number_style),
+        Paragraph(str(round(totals['balance_stock_carton'])), totals_number_style),
+        Paragraph(str(round(totals['can_fulfill_carton'])), totals_number_style),
+        Paragraph(str(round(totals['shortfall'])), totals_number_style),
+        Paragraph(str(round(totals['required_kg'], 2)), totals_number_style),
+        Paragraph("", totals_style)
+    ]
+    data.append(totals_row)
+
+    # Calculate column widths to fit A3 landscape
+    page_width = landscape(A3)[0] - 40*mm  # Total width minus margins
+    col_widths = [
+        page_width * 0.20,  # Fish Name - 20%
+        page_width * 0.15,  # Packed Size - 15%
+        page_width * 0.08,  # Order CTN - 8%
+        page_width * 0.08,  # Stock CTN - 8%
+        page_width * 0.08,  # Order KG/CTN - 8%
+        page_width * 0.08,  # Stock KG/CTN - 8%
+        page_width * 0.09,  # Balance Stock CTN - 9%
+        page_width * 0.08,  # Can Fulfill - 8%
+        page_width * 0.07,  # Shortfall - 7%
+        page_width * 0.08,  # Required KG - 8%
+        page_width * 0.08   # Status - 8%
+    ]
+
+    # Set row heights for better visibility with text wrapping
+    row_heights = [28] * len(data)  # 28 points = about 9.88mm height for all rows (much taller)
+    row_heights[0] = 32  # Header row even taller (32 points = about 11.29mm)
+    row_heights[-1] = 30  # Totals row (30 points = about 10.58mm)
+    
+    table = Table(data, colWidths=col_widths, rowHeights=row_heights, repeatRows=1)
+    
+    # Enhanced table style - simplified since paragraphs handle text formatting
+    table_style = [
+        # Header row styling
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2563eb")),
+        
+        # Totals row styling  
+        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#f1f5f9")),
+        
+        # Grid and borders
+        ("GRID", (0, 0), (-1, -1), 1, colors.HexColor("#d1d5db")),
+        ("LINEBELOW", (0, 0), (-1, 0), 2, colors.HexColor("#2563eb")),
+        ("LINEABOVE", (0, -1), (-1, -1), 2, colors.HexColor("#1e40af")),
+        
+        # Row backgrounds - alternating colors
+        ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, colors.HexColor("#f8fafc")]),
+        
+        # Vertical alignment
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),  # Top align for better text wrapping
+        
+        # Cell padding for better spacing
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]
+    
+    # Status colors are now handled by paragraph styles, no additional formatting needed
+    
+    table.setStyle(TableStyle(table_style))
     story.append(table)
 
-    doc.build(story)
+    # Build document with custom header/footer function
+    doc.build(story, onFirstPage=draw_page_decorations, onLaterPages=draw_page_decorations)
     return buffer.getvalue()
 
 
@@ -1688,6 +2036,8 @@ def view_batch(batch_token: str):
         reverse=True,
     )
 
+    finished_orders = get_finished_orders_for_batch(batch_token)
+
     return render_template(
         "summary.html",
         batch_token=batch_token,
@@ -1702,6 +2052,7 @@ def view_batch(batch_token: str):
         chart_not_have=json.dumps(not_have_counts),
         doughnut_data=json.dumps([kg_full, kg_not_full, kg_not_have]),
         calendar_events=json.dumps(events),
+        finished_orders=finished_orders,
     )
 
 
@@ -2193,6 +2544,34 @@ def compare_order_files():
         # Perform comparison
         comparison_result = compare_order_file_data(original_rows, updated_rows)
         
+        # Save comparison history to database (but not as applied changes yet)
+        try:
+            session_id = get_session_id_by_batch_token(batch_token)
+            if session_id:
+                # Find order file ID
+                conn = sqlite3.connect(DATABASE_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM uploaded_files WHERE session_id=? AND file_type='order' AND original_filename=? ORDER BY id DESC LIMIT 1", 
+                             (session_id, original_filename))
+                order_file_record = cursor.fetchone()
+                
+                if order_file_record:
+                    order_file_id = order_file_record[0]
+                    
+                    # Save comparison history (not applied yet - just the comparison)
+                    save_file_comparison_history(
+                        session_id=session_id,
+                        order_file_id=order_file_id,
+                        original_token=original_token,
+                        batch_token=batch_token,
+                        comparison_data=comparison_result,
+                        changes_applied=[]  # No changes applied yet, just comparison
+                    )
+                
+                conn.close()
+        except Exception as e:
+            print(f"Warning: Failed to save comparison history: {e}")
+        
         return {
             "success": True,
             "comparison": comparison_result
@@ -2447,7 +2826,7 @@ def apply_order_changes():
             with open(stock_file_path, 'rb') as f:
                 file_like = io.BytesIO(f.read())
                 file_like.filename = stock_file_path
-                stock_ds = load_excel(file_like)
+                stock_ds = load_tabular(file_like)
         except Exception as e:
             print(f"Error loading stock file for comparison: {e}")
             return {"success": False, "error": "Could not load stock file"}, 500
@@ -2546,6 +2925,13 @@ def apply_order_changes():
                         updated_file_path = os.path.join(UPLOAD_FOLDER, stored_filename)
                         wb.save(updated_file_path)
                         
+                        # Also save as a revision in the files system
+                        try:
+                            revision_note = f"Editor changes applied on {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                            save_revised_file(session_id, order_name, updated_file_path, revision_note)
+                        except Exception as rev_e:
+                            print(f"Warning: Failed to save revision file: {rev_e}")
+                        
                     except Exception as e:
                         print(f"Warning: Failed to save updated order file: {e}")
                     
@@ -2642,6 +3028,95 @@ def apply_order_changes():
         return {"success": False, "error": str(e)}, 500
 
 
+@app.get("/get-batch-files/<batch_token>")
+def get_batch_files(batch_token: str):
+    """Get all files (stock and order) for a batch with revision tracking."""
+    try:
+        session_id = get_session_id_by_batch_token(batch_token)
+        if not session_id:
+            return {"success": False, "error": "Session not found"}, 404
+        
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get stock files (should be original uploads only)
+        cursor.execute('''
+            SELECT * FROM uploaded_files 
+            WHERE session_id = ? AND file_type = 'stock'
+            ORDER BY uploaded_at ASC
+        ''', (session_id,))
+        stock_files = [dict(row) for row in cursor.fetchall()]
+        
+        # Get original order files (is_revision = 0 or NULL)
+        cursor.execute('''
+            SELECT * FROM uploaded_files 
+            WHERE session_id = ? AND file_type = 'order' AND (is_revision = 0 OR is_revision IS NULL)
+            ORDER BY uploaded_at ASC
+        ''', (session_id,))
+        original_order_files = [dict(row) for row in cursor.fetchall()]
+        
+        # Get revised order files (is_revision = 1)
+        cursor.execute('''
+            SELECT * FROM uploaded_files 
+            WHERE session_id = ? AND file_type = 'order' AND is_revision = 1
+            ORDER BY uploaded_at DESC
+        ''', (session_id,))
+        revised_order_files = [dict(row) for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        return {
+            "success": True,
+            "stock_files": stock_files,
+            "original_order_files": original_order_files,
+            "revised_order_files": revised_order_files
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+
+@app.get("/download-file/<int:file_id>")
+def download_file(file_id: int):
+    """Download a file by its ID."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get file info
+        cursor.execute('SELECT * FROM uploaded_files WHERE id = ?', (file_id,))
+        file_record = cursor.fetchone()
+        
+        if not file_record:
+            conn.close()
+            flash("File not found.", "error")
+            return redirect(url_for("index"))
+        
+        file_record = dict(file_record)
+        conn.close()
+        
+        # Build file path
+        file_path = os.path.join(UPLOAD_FOLDER, file_record['stored_filename'])
+        
+        # Check if file exists on disk
+        if not os.path.exists(file_path):
+            flash("File not found on disk.", "error")
+            return redirect(url_for("index"))
+        
+        # Send file
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=file_record['original_filename']
+        )
+        
+    except Exception as e:
+        flash(f"Error downloading file: {str(e)}", "error")
+        return redirect(url_for("index"))
+
+
 def apply_changes_to_order_data(original_rows, changes):
     """Apply comparison changes to create updated order data."""
     # Start with all original data (keep unchanged items)
@@ -2710,6 +3185,128 @@ def apply_changes_to_order_data(original_rows, changes):
     
     return updated_rows
 
+
+@app.route('/save-finished-order', methods=['POST'])
+def save_finished_order_route():
+    try:
+        data = request.get_json()
+        batch_token = data.get('batch_token')
+        order_token = data.get('order_token')
+        order_name = data.get('order_name')
+        weight = data.get('weight')
+        action = data.get('action', 'save')
+        
+        print(f"Received request to {action} finished order:")
+        print(f"  batch_token: {batch_token}")
+        print(f"  order_token: {order_token}")
+        print(f"  order_name: {order_name}")
+        print(f"  weight: {weight}")
+        
+        # Debug: Check if the table exists
+        conn_debug = sqlite3.connect(DATABASE_PATH)
+        cursor_debug = conn_debug.cursor()
+        cursor_debug.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='finished_orders'")
+        table_exists = cursor_debug.fetchone()
+        print(f"finished_orders table exists: {table_exists is not None}")
+        conn_debug.close()
+        
+        if not all([batch_token, order_token, order_name]):
+            return {"success": False, "error": "Missing required data"}
+        
+        # Get session by batch token
+        session_id = get_session_id_by_batch_token(batch_token)
+        print(f"Found session_id: {session_id}")
+        if not session_id:
+            return {"success": False, "error": "Session not found"}
+        
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        
+        if action == 'save':
+            # Save finished order
+            print(f"Inserting finished order into database...")
+            try:
+                cursor.execute('''
+                    INSERT OR REPLACE INTO finished_orders 
+                    (session_id, batch_token, order_token, order_name, weight)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (session_id, batch_token, order_token, order_name, weight))
+                print(f"Inserted successfully, affected rows: {cursor.rowcount}")
+                
+                # Verify the insert
+                cursor.execute('SELECT * FROM finished_orders WHERE session_id = ? AND order_token = ?', 
+                              (session_id, order_token))
+                result = cursor.fetchone()
+                print(f"Verification query result: {result}")
+                
+            except Exception as e:
+                print(f"Error inserting finished order: {e}")
+                conn.close()
+                return {"success": False, "error": f"Database insert error: {str(e)}"}
+                
+        elif action == 'remove':
+            # Remove finished order
+            print(f"Removing finished order from database...")
+            try:
+                cursor.execute('''
+                    DELETE FROM finished_orders 
+                    WHERE session_id = ? AND order_token = ?
+                ''', (session_id, order_token))
+                print(f"Removed successfully, affected rows: {cursor.rowcount}")
+            except Exception as e:
+                print(f"Error removing finished order: {e}")
+                conn.close()
+                return {"success": False, "error": f"Database delete error: {str(e)}"}
+        
+        conn.commit()
+        conn.close()
+        
+        return {"success": True}
+        
+    except Exception as e:
+        print(f"Error in save_finished_order: {e}")
+        return {"success": False, "error": str(e)}, 500
+
+@app.route('/get-finished-orders/<batch_token>')
+def get_finished_orders(batch_token):
+    try:
+        print(f"Getting finished orders for batch: {batch_token}")
+        
+        # Get session by batch token
+        session_id = get_session_id_by_batch_token(batch_token)
+        if not session_id:
+            return {"success": False, "error": "Session not found"}
+        
+        print(f"Found session_id: {session_id}")
+        
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT order_token, order_name, weight, finished_at
+            FROM finished_orders
+            WHERE session_id = ?
+            ORDER BY finished_at DESC
+        ''', (session_id,))
+        
+        finished_orders = []
+        for row in cursor.fetchall():
+            finished_orders.append({
+                'token': row['order_token'],
+                'name': row['order_name'],
+                'weight': row['weight'],
+                'finished_at': row['finished_at']
+            })
+        
+        conn.close()
+        
+        print(f"Found {len(finished_orders)} finished orders")
+        return {"success": True, "finished_orders": finished_orders}
+        
+    except Exception as e:
+        print(f"Error getting finished orders: {e}")
+        return {"success": False, "error": str(e)}, 500
 
 if __name__ == "__main__":
     app.run(debug=True)
