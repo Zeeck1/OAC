@@ -26,9 +26,7 @@
         border-color: var(--border-color);
       }
       
-      [data-bs-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > td {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
+      /* Remove striped table styling to let status colors show */
       
       [data-bs-theme="dark"] .alert {
         background-color: var(--bg-secondary);
@@ -76,36 +74,7 @@
         color: var(--text-primary);
       }
       
-      /* Maintain status colors in dark theme */
-      .status-full {
-        background-color: rgba(40, 167, 69, 0.2);
-        color: #28a745;
-      }
-      
-      .status-not-full {
-        background-color: rgba(255, 193, 7, 0.2);
-        color: #ffc107;
-      }
-      
-      .status-not-have {
-        background-color: rgba(220, 53, 69, 0.2);
-        color: #dc3545;
-      }
-      
-      [data-bs-theme="dark"] .status-full {
-        background-color: rgba(40, 167, 69, 0.3);
-        color: #5cbf5c;
-      }
-      
-      [data-bs-theme="dark"] .status-not-full {
-        background-color: rgba(255, 193, 7, 0.3);
-        color: #ffd43b;
-      }
-      
-      [data-bs-theme="dark"] .status-not-have {
-        background-color: rgba(220, 53, 69, 0.3);
-        color: #e74c3c;
-      }
+      /* Remove base table row colors to let status colors show */
       
       /* Fix table text visibility in dark mode */
       [data-bs-theme="dark"] .table tbody tr td {
@@ -124,6 +93,198 @@
       
       [data-bs-theme="dark"] .text-end {
         color: var(--text-primary) !important;
+      }
+      
+      /* Full View Table Row Colors */
+      .table tbody tr.status-full {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+        border-left: 4px solid #28a745;
+      }
+      
+      .table tbody tr.status-not-full {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+        border-left: 4px solid #ffc107;
+      }
+      
+      .table tbody tr.status-not-have {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+        border-left: 4px solid #dc3545;
+      }
+      
+      /* Dark theme row colors */
+      [data-bs-theme="dark"] .table tbody tr.status-full {
+        background-color: rgba(40, 167, 69, 0.2) !important;
+        border-left: 4px solid #5cbf5c;
+      }
+      
+      [data-bs-theme="dark"] .table tbody tr.status-not-full {
+        background-color: rgba(255, 193, 7, 0.2) !important;
+        border-left: 4px solid #ffd43b;
+      }
+      
+      [data-bs-theme="dark"] .table tbody tr.status-not-have {
+        background-color: rgba(220, 53, 69, 0.2) !important;
+        border-left: 4px solid #e74c3c;
+      }
+      
+      /* Hover effects for full view table */
+      .table tbody tr.status-full:hover {
+        background-color: rgba(40, 167, 69, 0.2) !important;
+      }
+      
+      .table tbody tr.status-not-full:hover {
+        background-color: rgba(255, 193, 7, 0.2) !important;
+      }
+      
+      .table tbody tr.status-not-have:hover {
+        background-color: rgba(220, 53, 69, 0.2) !important;
+      }
+      
+      /* Dark theme hover effects */
+      [data-bs-theme="dark"] .table tbody tr.status-full:hover {
+        background-color: rgba(40, 167, 69, 0.3) !important;
+      }
+      
+      [data-bs-theme="dark"] .table tbody tr.status-not-full:hover {
+        background-color: rgba(255, 193, 7, 0.3) !important;
+      }
+      
+      [data-bs-theme="dark"] .table tbody tr.status-not-have:hover {
+        background-color: rgba(220, 53, 69, 0.3) !important;
+      }
+      
+      /* Full Table View Dark Mode Fixes */
+      [data-bs-theme="dark"] .modal-content {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+      }
+      
+      [data-bs-theme="dark"] .modal-header {
+        background-color: var(--card-bg);
+        border-bottom-color: var(--border-color);
+      }
+      
+      [data-bs-theme="dark"] .modal-title {
+        color: var(--text-primary);
+      }
+      
+      /* Full table search section dark mode */
+      [data-bs-theme="dark"] .bg-light {
+        background-color: var(--bg-secondary) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+      
+      /* Full table dark mode styling */
+      [data-bs-theme="dark"] #fullProcessingTable {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable thead th {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody td {
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+      }
+      
+      /* Default background for cells without status */
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr:not(.status-full):not(.status-not-full):not(.status-not-have) td {
+        background-color: var(--card-bg) !important;
+      }
+      
+      /* Override table-dark class in dark mode */
+      [data-bs-theme="dark"] .table-dark {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+      }
+      
+      [data-bs-theme="dark"] .table-dark th {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+      }
+      
+      /* Full table row status colors in dark mode - subtle visibility */
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full {
+        background-color: rgba(40, 167, 69, 0.15) !important;
+        border-left: 3px solid #4ade80;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full td {
+        background-color: rgba(40, 167, 69, 0.15) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full {
+        background-color: rgba(255, 193, 7, 0.15) !important;
+        border-left: 3px solid #fbbf24;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full td {
+        background-color: rgba(255, 193, 7, 0.15) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+        border-left: 3px solid #f87171;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have td {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+      }
+      
+      /* Full table hover effects in dark mode - subtle enhancement */
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full:hover {
+        background-color: rgba(40, 167, 69, 0.25) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full:hover td {
+        background-color: rgba(40, 167, 69, 0.25) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full:hover {
+        background-color: rgba(255, 193, 7, 0.25) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full:hover td {
+        background-color: rgba(255, 193, 7, 0.25) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have:hover {
+        background-color: rgba(220, 53, 69, 0.25) !important;
+      }
+      
+      [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have:hover td {
+        background-color: rgba(220, 53, 69, 0.25) !important;
+      }
+      
+      /* Fix text-danger class in dark mode */
+      [data-bs-theme="dark"] .text-danger {
+        color: #ff6b6b !important;
+      }
+      
+      /* Fix badge colors in dark mode */
+      [data-bs-theme="dark"] .badge.bg-primary {
+        background-color: #2563eb !important;
+        color: white !important;
+      }
+      
+      [data-bs-theme="dark"] .badge.bg-success {
+        background-color: #16a34a !important;
+        color: white !important;
+      }
+      
+      [data-bs-theme="dark"] .badge.bg-warning {
+        background-color: #eab308 !important;
+        color: #000 !important;
+      }
+      
+      [data-bs-theme="dark"] .badge.bg-secondary {
+        background-color: #6b7280 !important;
+        color: white !important;
       }
     </style>
 {% endblock %}
@@ -163,6 +324,9 @@
             <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">
               <i class="bi bi-arrow-left me-2"></i>{% if is_historical %}Back to Home{% else %}Process Another{% endif %}
             </a>
+            <button class="btn btn-outline-primary" onclick="openFullTableView()">
+              <i class="bi bi-arrows-fullscreen me-2"></i>Full View
+            </button>
             {% if download_token %}
             <div class="dropdown">
               <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -291,6 +455,7 @@
               <table class="table table-compact align-middle m-0">
                 <thead class="table-light">
                   <tr>
+                    <th>Order Name</th>
                     <th>Fish Name</th>
                     <th>Packed Size</th>
                     <th class="text-end">Order CTN</th>
@@ -301,8 +466,12 @@
                 <tbody>
                   {% for r in records %}
                   <tr class="status-{{ r.status|lower|replace(' ', '-') }}">
-                    <td>{{ r['fish name'] }}</td>
-                    <td>{{ r['packed size'] }}</td>
+                    <td>
+                      {% set order_code = order_name.split('_')[1] if order_name.count('_') >= 2 else order_name.split('.')[0] %}
+                      <span class="badge bg-primary text-white">{{ order_code }}</span>
+                    </td>
+                    <td>{{ r['fish_name'] }}</td>
+                    <td>{{ r['packed_size'] }}</td>
                     <td class="text-end">{{ r.order_carton }}</td>
                     <td class="text-end">{{ r.order_kg_per_ctn }}</td>
                     <td>
@@ -333,6 +502,7 @@
                 <table class="table table-compact align-middle m-0">
               <thead class="table-light">
                 <tr>
+                  <th>Order Name</th>
                   <th>Fish Name</th>
                   <th>Packed Size</th>
                   <th class="text-end">Order CTN</th>
@@ -349,8 +519,12 @@
               <tbody>
                 {% for r in records %}
                 <tr class="status-{{ r.status|lower|replace(' ', '-') }}">
-                  <td>{{ r['fish name'] }}</td>
-                  <td>{{ r['packed size'] }}</td>
+                  <td>
+                    {% set order_code = order_name.split('_')[1] if order_name.count('_') >= 2 else order_name.split('.')[0] %}
+                    <span class="badge bg-primary text-white">{{ order_code }}</span>
+                  </td>
+                  <td>{{ r['fish_name'] }}</td>
+                  <td>{{ r['packed_size'] }}</td>
                   <td class="text-end">{{ r.order_carton }}</td>
                   <td class="text-end">{{ r.stock_carton }}</td>
                   <td class="text-end">{{ r.order_kg_per_ctn }}</td>
@@ -385,6 +559,7 @@
                 <table class="table table-compact align-middle m-0">
                   <thead class="table-light">
                     <tr>
+                      <th>Order Name</th>
                       <th>Fish Name</th>
                       <th>Packed Size</th>
                       <th class="text-end" data-full-text="Order CTN" data-mobile-text="O.CTN">Order CTN</th>
@@ -401,8 +576,12 @@
                   <tbody>
                     {% for r in records if r.status == label %}
                     <tr class="status-{{ r.status|lower|replace(' ', '-') }}">
-                      <td>{{ r['fish name'] }}</td>
-                      <td>{{ r['packed size'] }}</td>
+                      <td>
+                        {% set order_code = order_name.split('_')[1] if order_name.count('_') >= 2 else order_name.split('.')[0] %}
+                        <span class="badge bg-primary text-white">{{ order_code }}</span>
+                      </td>
+                      <td>{{ r['fish_name'] }}</td>
+                      <td>{{ r['packed_size'] }}</td>
                       <td class="text-end">{{ r.order_carton }}</td>
                       <td class="text-end">{{ r.stock_carton }}</td>
                       <td class="text-end">{{ r.order_kg_per_ctn }}</td>
@@ -433,6 +612,110 @@
       </div>
 
     </div>
+
+<!-- Full Table View Modal -->
+<div class="modal fade" id="fullTableModal" tabindex="-1" aria-labelledby="fullTableModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fullTableModalLabel">
+          <i class="bi bi-table me-2"></i>
+          Processing Results - Full View
+        </h5>
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge bg-primary" id="fullTableItemCount">{{ records|length }} items</span>
+          <button type="button" class="btn btn-outline-success btn-sm" onclick="exportTableToCSV()">
+            <i class="bi bi-download me-1"></i>
+            Export CSV
+          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0">
+        <!-- Enhanced Search and Filters -->
+        <div class="bg-light p-3 border-bottom">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control" id="fullTableSearch" placeholder="Search all columns...">
+                <button class="btn btn-outline-secondary" type="button" id="clearFullSearch">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <select class="form-select" id="orderCodeFilter">
+                <option value="">All Order Codes</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select class="form-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="Full">Full</option>
+                <option value="Not Full">Not Full</option>
+                <option value="Not have">Not have</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="fishFilter">
+                <option value="">All Fish Types</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-outline-primary w-100" onclick="resetFilters()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <small class="text-muted" id="fullTableSearchResults">Showing all {{ records|length }} results</small>
+            </div>
+            <div class="col-md-6 text-end">
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Scroll horizontally to see all columns
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Table -->
+        <div class="table-responsive" style="height: calc(100vh - 200px); overflow: auto;">
+          <table class="table table-hover" id="fullProcessingTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="min-width: 100px;">Order Name</th>
+                <th style="min-width: 150px;">Fish Name</th>
+                <th style="min-width: 120px;">Packed Size</th>
+                <th style="min-width: 100px;">Order CTN</th>
+                <th style="min-width: 100px;">Stock CTN</th>
+                <th style="min-width: 100px;">Order KG/CTN</th>
+                <th style="min-width: 100px;">Stock KG/CTN</th>
+                <th style="min-width: 100px;">Balance Stock CTN</th>
+                <th style="min-width: 100px;">MC To Give</th>
+                <th style="min-width: 100px;">Can Fulfill</th>
+                <th style="min-width: 100px;">Shortfall</th>
+                <th style="min-width: 100px;">Total Order KG</th>
+                <th style="min-width: 100px;">Total Stock KG</th>
+                <th style="min-width: 100px;">Can Fulfill KG</th>
+                <th style="min-width: 100px;">Shortfall KG</th>
+                <th style="min-width: 120px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="fullTableBody">
+              <!-- Data will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -553,6 +836,321 @@
 
         // Removed table row hover effects for better mobile experience
       })();
+
+      // Full Table View Functions - Global scope for onclick handlers
+      let fullTableData = [];
+      let filteredFullTableData = [];
+
+      // Make functions globally accessible
+      window.openFullTableView = function() {
+        // Populate the full table with current data
+        populateFullTable();
+        
+        // Populate filter dropdowns
+        populateOrderCodeFilter();
+        populateFishFilter();
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('fullTableModal'));
+        modal.show();
+      }
+
+      window.populateFullTable = function() {
+        const tbody = document.getElementById('fullTableBody');
+        
+        // Get current results from the template data
+        const currentResults = {{ records | tojson }};
+        fullTableData = currentResults;
+        filteredFullTableData = [...fullTableData];
+        
+        tbody.innerHTML = '';
+        
+        if (!fullTableData || fullTableData.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="16" class="text-center text-muted py-4">
+                <i class="bi bi-table fs-1 mb-3"></i>
+                <p>No processing results available.</p>
+                <small>This might be because no results were generated.</small>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        fullTableData.forEach(result => {
+          const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+          const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+          const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+          const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+          // Extract order code from order_name (same logic as batch details)
+          const orderName = '{{ order_name }}';
+          const orderCode = orderName.split('_').length >= 3 ? 
+            orderName.split('_')[1] : 
+            orderName.split('.')[0];
+
+          const statusClass = result.status ? `status-${result.status.toLowerCase().replace(' ', '-')}` : '';
+          const row = `
+            <tr class="${statusClass}">
+              <td>
+                <span class="badge bg-primary text-white">${orderCode}</span>
+              </td>
+              <td><strong>${result.fish_name || 'N/A'}</strong></td>
+              <td>${result.packed_size || 'N/A'}</td>
+              <td class="text-end">${result.order_carton || 0}</td>
+              <td class="text-end">${result.stock_carton || 0}</td>
+              <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+              <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+              <td class="text-end">${result.balance_stock_carton || 0}</td>
+              <td class="text-end">${result.mc_to_give || 0}</td>
+              <td class="text-end"><strong>${result.can_fulfill_carton || 0}</strong></td>
+              <td class="text-end text-danger"><strong>${result.shortfall || 0}</strong></td>
+              <td class="text-end">${formatNumber(orderKg)}</td>
+              <td class="text-end">${formatNumber(stockKg)}</td>
+              <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+              <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+              <td>${getStatusBadge(result.status)}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+
+        // Update item count
+        document.getElementById('fullTableItemCount').textContent = `${fullTableData.length} items`;
+        document.getElementById('fullTableSearchResults').textContent = `Showing all ${fullTableData.length} results`;
+      }
+
+      window.populateFishFilter = function() {
+        const fishFilter = document.getElementById('fishFilter');
+        const uniqueFish = [...new Set(fullTableData.map(result => result.fish_name).filter(name => name))];
+        
+        // Clear existing options except the first one
+        fishFilter.innerHTML = '<option value="">All Fish Types</option>';
+        
+        uniqueFish.sort().forEach(fish => {
+          const option = document.createElement('option');
+          option.value = fish;
+          option.textContent = fish;
+          fishFilter.appendChild(option);
+        });
+      }
+
+      window.populateOrderCodeFilter = function() {
+        const orderCodeFilter = document.getElementById('orderCodeFilter');
+        const orderName = '{{ order_name }}';
+        
+        // Extract unique order codes from the data
+        const uniqueOrderCodes = [...new Set(fullTableData.map(result => {
+          const orderCode = orderName.split('_').length >= 3 ? 
+            orderName.split('_')[1] : 
+            orderName.split('.')[0];
+          return orderCode;
+        }).filter(code => code))];
+        
+        // Clear existing options except the first one
+        orderCodeFilter.innerHTML = '<option value="">All Order Codes</option>';
+        
+        uniqueOrderCodes.sort().forEach(orderCode => {
+          const option = document.createElement('option');
+          option.value = orderCode;
+          option.textContent = orderCode;
+          orderCodeFilter.appendChild(option);
+        });
+      }
+
+      window.filterFullTable = function() {
+        const searchTerm = document.getElementById('fullTableSearch').value.toLowerCase().trim();
+        const orderCodeFilter = document.getElementById('orderCodeFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const fishFilter = document.getElementById('fishFilter').value;
+        
+        filteredFullTableData = fullTableData.filter(result => {
+          // Search filter
+          const searchMatch = !searchTerm || 
+            result.fish_name?.toLowerCase().includes(searchTerm) ||
+            result.packed_size?.toLowerCase().includes(searchTerm);
+          
+          // Order Code filter
+          const orderName = '{{ order_name }}';
+          const orderCode = orderName.split('_').length >= 3 ? 
+            orderName.split('_')[1] : 
+            orderName.split('.')[0];
+          const orderCodeMatch = !orderCodeFilter || orderCode === orderCodeFilter;
+          
+          // Status filter
+          const statusMatch = !statusFilter || result.status === statusFilter;
+          
+          // Fish filter
+          const fishMatch = !fishFilter || result.fish_name === fishFilter;
+          
+          return searchMatch && orderCodeMatch && statusMatch && fishMatch;
+        });
+        
+        // Update table display
+        updateFullTableDisplay();
+        
+        // Update search results text
+        document.getElementById('fullTableSearchResults').textContent = 
+          `Showing ${filteredFullTableData.length} of ${fullTableData.length} results`;
+      }
+
+      window.updateFullTableDisplay = function() {
+        const tbody = document.getElementById('fullTableBody');
+        
+        tbody.innerHTML = '';
+        
+        if (filteredFullTableData.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="16" class="text-center text-muted py-4">
+                <i class="bi bi-search fs-1 mb-3"></i>
+                <p>No results match your filters.</p>
+                <small>Try adjusting your search criteria.</small>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        filteredFullTableData.forEach(result => {
+          const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+          const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+          const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+          const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+          // Extract order code from order_name (same logic as batch details)
+          const orderName = '{{ order_name }}';
+          const orderCode = orderName.split('_').length >= 3 ? 
+            orderName.split('_')[1] : 
+            orderName.split('.')[0];
+
+          const statusClass = result.status ? `status-${result.status.toLowerCase().replace(' ', '-')}` : '';
+          const row = `
+            <tr class="${statusClass}">
+              <td>
+                <span class="badge bg-primary text-white">${orderCode}</span>
+              </td>
+              <td><strong>${result.fish_name || 'N/A'}</strong></td>
+              <td>${result.packed_size || 'N/A'}</td>
+              <td class="text-end">${result.order_carton || 0}</td>
+              <td class="text-end">${result.stock_carton || 0}</td>
+              <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+              <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+              <td class="text-end">${result.balance_stock_carton || 0}</td>
+              <td class="text-end">${result.mc_to_give || 0}</td>
+              <td class="text-end"><strong>${result.can_fulfill_carton || 0}</strong></td>
+              <td class="text-end text-danger"><strong>${result.shortfall || 0}</strong></td>
+              <td class="text-end">${formatNumber(orderKg)}</td>
+              <td class="text-end">${formatNumber(stockKg)}</td>
+              <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+              <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+              <td>${getStatusBadge(result.status)}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      }
+
+      window.resetFilters = function() {
+        document.getElementById('fullTableSearch').value = '';
+        document.getElementById('orderCodeFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('fishFilter').value = '';
+        filteredFullTableData = [...fullTableData];
+        updateFullTableDisplay();
+        document.getElementById('fullTableSearchResults').textContent = `Showing all ${fullTableData.length} results`;
+      }
+
+      window.exportTableToCSV = function() {
+        const data = filteredFullTableData.length > 0 ? filteredFullTableData : fullTableData;
+        
+        if (!data || data.length === 0) {
+          alert('No data to export');
+          return;
+        }
+
+        let csvContent = 'Order Name,Fish Name,Packed Size,Order CTN,Stock CTN,Order KG/CTN,Stock KG/CTN,Balance Stock CTN,MC To Give,Can Fulfill,Shortfall,Total Order KG,Total Stock KG,Can Fulfill KG,Shortfall KG,Status\n';
+        
+        // Add data rows
+        data.forEach(result => {
+          const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+          const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+          const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+          const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+          
+          // Extract order code from order_name (same logic as batch details)
+          const orderName = '{{ order_name }}';
+          const orderCode = orderName.split('_').length >= 3 ? 
+            orderName.split('_')[1] : 
+            orderName.split('.')[0];
+          
+          csvContent += `"${orderCode}","${result.fish_name || 'N/A'}","${result.packed_size || 'N/A'}",${result.order_carton || 0},${result.stock_carton || 0},${result.order_kg_per_ctn || 0},${result.stock_kg_per_ctn || 0},${result.balance_stock_carton || 0},${result.mc_to_give || 0},${result.can_fulfill_carton || 0},${result.shortfall || 0},${formatNumber(orderKg)},${formatNumber(stockKg)},${formatNumber(canFulfillKg)},${formatNumber(shortfallKg)},"${result.status || 'N/A'}"\n`;
+        });
+        
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `processing_results_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Helper functions
+      window.formatNumber = function(value) {
+        return parseFloat(value).toFixed(1);
+      }
+
+      window.getStatusBadge = function(status) {
+        if (status === 'Full') {
+          return `<span class="badge bg-success">Full</span>`;
+        } else if (status === 'Not Full') {
+          return `<span class="badge bg-warning text-dark">Not Full</span>`;
+        } else {
+          return `<span class="badge bg-secondary">Not have</span>`;
+        }
+      }
+
+      // Event listeners for full table functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        // Full table search
+        const fullTableSearch = document.getElementById('fullTableSearch');
+        if (fullTableSearch) {
+          fullTableSearch.addEventListener('input', filterFullTable);
+        }
+        
+        // Clear full search
+        const clearFullSearch = document.getElementById('clearFullSearch');
+        if (clearFullSearch) {
+          clearFullSearch.addEventListener('click', function() {
+            document.getElementById('fullTableSearch').value = '';
+            filterFullTable();
+            document.getElementById('fullTableSearch').focus();
+          });
+        }
+        
+        // Order Code filter
+        const orderCodeFilter = document.getElementById('orderCodeFilter');
+        if (orderCodeFilter) {
+          orderCodeFilter.addEventListener('change', filterFullTable);
+        }
+        
+        // Status filter
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+          statusFilter.addEventListener('change', filterFullTable);
+        }
+        
+        // Fish filter
+        const fishFilter = document.getElementById('fishFilter');
+        if (fishFilter) {
+          fishFilter.addEventListener('change', filterFullTable);
+        }
+      });
     </script>
 {% endblock %}
 

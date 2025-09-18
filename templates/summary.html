@@ -173,7 +173,7 @@
       color: var(--text-primary);
       box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
     }
-
+    
     /* Files Tab Styles */
     .file-item {
       transition: all 0.3s ease;
@@ -422,7 +422,7 @@
             <div class="row mb-4">
               <div class="col-12">
                 <div class="border">
-                  <div class="p-3 border-bottom bg-light">
+                                <div class="p-3 border-bottom bg-light">
                     <h6 class="mb-3">Select Order File to Edit</h6>
                     <input type="text" class="form-control" id="order-search" 
                            placeholder="Search order files..." autocomplete="off">
@@ -904,52 +904,77 @@
       <div class="modal fade" id="comparisonModal" tabindex="-1" aria-labelledby="comparisonModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen-lg-down modal-xl">
           <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-light">
               <h5 class="modal-title" id="comparisonModalLabel">
-                <i class="bi bi-file-diff me-2"></i>File Comparison Details
+                <i class="bi bi-file-diff me-2 text-primary"></i>File Comparison Details
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-              <div class="row mb-3">
-                <div class="col-lg-6 col-12 mb-2 mb-lg-0">
-                  <strong>Order File:</strong> <span id="modal-filename" class="text-break"></span>
-                </div>
-                <div class="col-lg-6 col-12">
-                  <strong>Date & Time:</strong> <span id="modal-datetime" class="text-break"></span>
-                </div>
-              </div>
-              
-              <div class="row mb-3">
-                <div class="col-12">
-                  <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button class="btn btn-outline-secondary btn-sm active" data-filter="all">All</button>
-                    <button class="btn btn-outline-success btn-sm" data-filter="added">Added</button>
-                    <button class="btn btn-outline-warning btn-sm" data-filter="modified">Modified</button>
-                    <button class="btn btn-outline-danger btn-sm" data-filter="deleted">Deleted</button>
+            <div class="modal-body p-0">
+              <!-- Header Information Card -->
+              <div class="card border-0 shadow-none">
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-lg-6 col-12 mb-2 mb-lg-0">
+                      <strong class="text-primary">Order File:</strong> 
+                      <span id="modal-filename" class="text-break fw-medium"></span>
+                    </div>
+                    <div class="col-lg-6 col-12">
+                      <strong class="text-primary">Date & Time:</strong> 
+                      <span id="modal-datetime" class="text-break fw-medium"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Filter Buttons -->
+                  <div class="d-flex flex-wrap gap-2 mb-0">
+                    <button class="btn btn-outline-secondary btn-sm active" data-filter="all">
+                      <i class="bi bi-list-ul me-1"></i>All
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" data-filter="added">
+                      <i class="bi bi-plus-circle me-1"></i>Added
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" data-filter="modified">
+                      <i class="bi bi-pencil-square me-1"></i>Modified
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" data-filter="deleted">
+                      <i class="bi bi-dash-circle me-1"></i>Deleted
+                    </button>
                   </div>
                 </div>
               </div>
               
-              <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th class="text-nowrap">Status</th>
-                      <th class="text-nowrap">Fish Name</th>
-                      <th class="text-nowrap">Packed Size</th>
-                      <th class="text-nowrap">Old Quantity</th>
-                      <th class="text-nowrap">New Quantity</th>
-                      <th class="text-nowrap">Changes</th>
-                    </tr>
-                  </thead>
-                  <tbody id="modal-comparison-tbody">
-                  </tbody>
-                </table>
+              <!-- Table Container with proper framing -->
+              <div class="border-top">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                  <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-dark sticky-top">
+                      <tr>
+                        <th class="text-nowrap" style="width: 10%;">Status</th>
+                        <th class="text-nowrap" style="width: 25%;">Fish Name</th>
+                        <th class="text-nowrap" style="width: 20%;">Packed Size</th>
+                        <th class="text-nowrap text-center" style="width: 12%;">Old Qty</th>
+                        <th class="text-nowrap text-center" style="width: 12%;">New Qty</th>
+                        <th class="text-nowrap" style="width: 21%;">Changes</th>
+                      </tr>
+                    </thead>
+                    <tbody id="modal-comparison-tbody">
+                      <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                  </table>
+                  
+                  <!-- Empty state -->
+                  <div id="modal-empty-state" class="text-center py-5 d-none">
+                    <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">No Changes Found</h5>
+                    <p class="text-muted">No comparison data available for this record.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer border-top bg-light">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Close
+              </button>
             </div>
           </div>
         </div>
@@ -1303,7 +1328,7 @@
           loadComparisonHistory();
         });
       }
-      
+
       // Also load history when page loads if history tab is active
       if (document.querySelector('#tab-history.active')) {
         loadComparisonHistory();
@@ -1348,7 +1373,7 @@
           loadFilesData();
         });
       }
-      
+
       // Also load files when page loads if files tab is active
       if (document.querySelector('#tab-files.active')) {
         loadFilesData();
@@ -1363,6 +1388,8 @@
     let currentLoadedWeight = 0;
 
     function initializeLoadingTab() {
+      console.log('Initializing Loading tab...');
+
       // Initialize with batch orders data - use fulfillable_kg (can_fulfill_carton * order_kg_per_ctn)
       availableOrders = [
         {% for item in items %}
@@ -1378,41 +1405,80 @@
         }{% if not loop.last %},{% endif %}
         {% endfor %}
       ];
+
+      console.log('Available orders loaded:', availableOrders.length);
       
       loadedOrders = [];
       finishedOrders = [];
       currentLoadedWeight = 0;
       
-             // Load existing finished orders from database
-       {% if finished_orders %}
-       finishedOrders = [
-         {% for order in finished_orders %}
-         {
-           token: '{{ order.token }}',
-           name: '{{ order.name }}',
-           weight: {{ order.weight }},
-           finished_at: '{{ order.finished_at }}',
+      // Load finished orders and filter available orders
+      loadFinishedOrdersAndFilterAvailable();
+
+      // Note: Rendering will happen after filtering is complete (in the callback)
+      // This ensures that finished orders are properly filtered out before display
+    }
+
+    function loadFinishedOrdersAndFilterAvailable() {
+      const batchToken = '{{ batch_token }}';
+
+      console.log('Loading finished orders and filtering available orders...');
+
+      fetch(`/get-finished-orders/${batchToken}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Finished orders response:', data);
+
+          if (data.success && data.finished_orders) {
+            // Update finishedOrders array
+            finishedOrders = data.finished_orders.map(order => ({
+              token: order.token,
+              name: order.name,
+              weight: order.weight,
+              finished_at: order.finished_at,
            // Add original order data
-           ...findOriginalOrderData('{{ order.token }}')
-         }{% if not loop.last %},{% endif %}
-         {% endfor %}
-       ];
+              ...findOriginalOrderData(order.token)
+            }));
+
+            console.log('Loaded finished orders:', finishedOrders.length);
        
        // Remove finished orders from available orders
        finishedOrders.forEach(finishedOrder => {
          const index = availableOrders.findIndex(order => order.token === finishedOrder.token);
          if (index !== -1) {
+                console.log('Removing finished order from available orders:', finishedOrder.token);
            availableOrders.splice(index, 1);
          }
        });
-       {% endif %}
       
+            console.log('Available orders after filtering:', availableOrders.length);
+
+            // Render the orders after filtering is complete
       renderAvailableOrders();
       renderLoadedOrders();
       renderFinishedOrders();
       updateContainerStatus();
-      
-             // Event listeners removed for auto-optimize and reset-loading
+          } else {
+            console.log('No finished orders found');
+            finishedOrders = [];
+
+            // Still render even if no finished orders
+            renderAvailableOrders();
+            renderLoadedOrders();
+            renderFinishedOrders();
+            updateContainerStatus();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading finished orders:', error);
+          finishedOrders = [];
+
+          // Render even on error
+          renderAvailableOrders();
+          renderLoadedOrders();
+          renderFinishedOrders();
+          updateContainerStatus();
+        });
     }
 
     function renderAvailableOrders() {
@@ -1423,6 +1489,7 @@
         const canLoad = (currentLoadedWeight + order.weight) <= CONTAINER_MAX_CAPACITY;
         const row = document.createElement('tr');
         row.className = '';
+        row.setAttribute('data-order-token', order.token);
         
         row.innerHTML = `
           <td>
@@ -1576,7 +1643,16 @@
          function finishOrder(token) {
        console.log('finishOrder called with token:', token);
        console.log('Current availableOrders:', availableOrders);
-       
+       console.log('AvailableOrders length:', availableOrders ? availableOrders.length : 'undefined');
+
+       // Ensure availableOrders is initialized
+       if (!availableOrders || availableOrders.length === 0) {
+         console.log('Re-initializing availableOrders...');
+         initializeLoadingTab();
+         return; // Exit and let the user try again
+       }
+
+       try {
        const orderIndex = availableOrders.findIndex(order => order.token === token);
        console.log('Order found at index:', orderIndex);
        
@@ -1588,11 +1664,19 @@
          console.log('New finishedOrders array:', finishedOrders);
          
          // Save to database first
+           console.log('Saving order to database...');
          saveFinishedOrder(order, 'save');
          
-         // Re-render all sections
+                      // Re-filter available orders and re-render all sections
+           filterFinishedOrdersFromAvailable();
          renderAvailableOrders();
          renderFinishedOrders();
+
+           // Also ensure the order is removed from DOM immediately
+           const orderRow = document.querySelector(`[data-order-token="${token}"]`);
+           if (orderRow) {
+             orderRow.remove();
+           }
          
          console.log('Rendering complete');
          
@@ -1600,10 +1684,18 @@
          if (document.querySelector('#tab-finished.active')) {
       setTimeout(() => {
              loadFinishedOrdersFromServer();
-           }, 1000); // Give time for database save to complete
+             }, 500); // Reduced timeout for faster UI update
          }
+
+           // Show success message
+           alert('Order finished successfully!');
        } else {
          console.error('Order not found in availableOrders for token:', token);
+           alert('Order not found in available orders.');
+         }
+       } catch (error) {
+         console.error('Error in finishOrder:', error);
+         alert('Error finishing order: ' + error.message);
        }
      }
 
@@ -1769,16 +1861,11 @@
             
             console.log('Updated finishedOrders:', finishedOrders);
             
-            // Remove finished orders from available orders if they exist there
-            finishedOrders.forEach(finishedOrder => {
-              const index = availableOrders.findIndex(order => order.token === finishedOrder.token);
-              if (index !== -1) {
-                console.log('Removing finished order from available orders:', finishedOrder.token);
-                availableOrders.splice(index, 1);
-              }
-            });
-            
-            // Re-render the finished orders table
+            // Re-filter available orders to ensure consistency
+            filterFinishedOrdersFromAvailable();
+
+            // Re-render both tables
+            renderAvailableOrders();
             renderFinishedOrders();
           } else {
             console.log('No finished orders found or error:', data.error);
@@ -1790,6 +1877,17 @@
           console.error('Error loading finished orders:', error);
           finishedOrders = [];
           renderFinishedOrders();
+        });
+    }
+
+    function filterFinishedOrdersFromAvailable() {
+      // Remove finished orders from available orders
+      finishedOrders.forEach(finishedOrder => {
+        const index = availableOrders.findIndex(order => order.token === finishedOrder.token);
+        if (index !== -1) {
+          console.log('Removing finished order from available orders:', finishedOrder.token);
+          availableOrders.splice(index, 1);
+        }
         });
     }
 
@@ -1819,16 +1917,16 @@
 
     function loadComparisonHistory() {
       const batchToken = '{{ batch_token }}';
-      
+
       document.getElementById('history-loading').style.display = 'block';
       document.getElementById('history-content').style.display = 'none';
-      
+
       fetch(`/get-comparison-history/${batchToken}`)
         .then(response => response.json())
         .then(data => {
           document.getElementById('history-loading').style.display = 'none';
           document.getElementById('history-content').style.display = 'block';
-          
+
           if (data.success && data.history && data.history.length > 0) {
             displayComparisonHistory(data.history);
             document.getElementById('no-history').style.display = 'none';
@@ -1974,32 +2072,32 @@
     // Files Tab Functionality
     function loadFilesData() {
       const batchToken = '{{ batch_token }}';
-      
+
       // Show loading spinners
-      document.getElementById('stock-files-container').innerHTML = 
+      document.getElementById('stock-files-container').innerHTML =
         '<div class="text-center text-muted py-3">' +
           '<div class="spinner-border spinner-border-sm me-2" role="status">' +
             '<span class="visually-hidden">Loading...</span>' +
           '</div>' +
           'Loading stock files...' +
         '</div>';
-      
-      document.getElementById('original-order-files-container').innerHTML = 
+
+      document.getElementById('original-order-files-container').innerHTML =
         '<div class="text-center text-muted py-3">' +
           '<div class="spinner-border spinner-border-sm me-2" role="status">' +
             '<span class="visually-hidden">Loading...</span>' +
           '</div>' +
           'Loading original order files...' +
         '</div>';
-      
-      document.getElementById('revised-order-files-container').innerHTML = 
+
+      document.getElementById('revised-order-files-container').innerHTML =
         '<div class="text-center text-muted py-3">' +
           '<div class="spinner-border spinner-border-sm me-2" role="status">' +
             '<span class="visually-hidden">Loading...</span>' +
           '</div>' +
           'Loading revised order files...' +
         '</div>';
-      
+
       // Fetch files data
       fetch('/get-batch-files/' + batchToken)
         .then(response => response.json())
@@ -2020,7 +2118,7 @@
     
     function displayStockFiles(stockFiles) {
       const container = document.getElementById('stock-files-container');
-      
+
       if (stockFiles.length === 0) {
         container.innerHTML = 
           '<div class="text-center text-muted py-3">' +
@@ -2053,7 +2151,7 @@
     
     function displayOriginalOrderFiles(orderFiles) {
       const container = document.getElementById('original-order-files-container');
-      
+
       if (orderFiles.length === 0) {
         container.innerHTML = 
           '<div class="text-center text-muted py-3">' +
@@ -2086,7 +2184,7 @@
     
     function displayRevisedOrderFiles(revisedFiles) {
       const container = document.getElementById('revised-order-files-container');
-      
+
       if (revisedFiles.length === 0) {
         container.innerHTML = 
           '<div class="text-center text-muted py-3">' +
@@ -2122,16 +2220,16 @@
     function showFilesError(message) {
       const containers = [
         'stock-files-container',
-        'original-order-files-container', 
+        'original-order-files-container',
         'revised-order-files-container'
       ];
-      
+
       containers.forEach(containerId => {
         document.getElementById(containerId).innerHTML = 
-          '<div class="text-center text-danger py-3">' +
-            '<i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>' +
-            '<p class="mb-0 mt-2">' + message + '</p>' +
-          '</div>';
+            '<div class="text-center text-danger py-3">' +
+              '<i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>' +
+              '<p class="mb-0 mt-2">' + message + '</p>' +
+            '</div>';
       });
     }
     
@@ -2163,11 +2261,19 @@
       document.getElementById('modal-filename').textContent = record.original_filename || 'Unknown';
       document.getElementById('modal-datetime').textContent = record.bangkok_datetime || record.created_at;
       
-      // Populate modal table
+      // Get modal elements
       const modalTbody = document.getElementById('modal-comparison-tbody');
+      const emptyState = document.getElementById('modal-empty-state');
+      
+      // Clear existing content
       modalTbody.innerHTML = '';
       
-      if (comparisonData && comparisonData.changes) {
+      // Check if we have comparison data
+      if (comparisonData && comparisonData.changes && comparisonData.changes.length > 0) {
+        // Hide empty state and show table
+        emptyState.classList.add('d-none');
+        
+        // Populate modal table
         comparisonData.changes.forEach(change => {
           const row = document.createElement('tr');
           row.className = getRowClass(change.status);
@@ -2179,15 +2285,18 @@
                 ${getStatusIcon(change.status)} ${change.status}
               </span>
             </td>
-            <td>${change.fish_name || ''}</td>
-            <td>${change.packed_size || ''}</td>
-            <td>${change.old_quantity !== undefined && change.old_quantity !== null ? change.old_quantity : '-'}</td>
-            <td>${change.new_quantity !== undefined && change.new_quantity !== null ? change.new_quantity : '-'}</td>
-            <td>${change.changes || ''}</td>
+            <td class="text-truncate" style="max-width: 200px;" title="${change.fish_name || ''}">${change.fish_name || '-'}</td>
+            <td class="text-truncate" style="max-width: 150px;" title="${change.packed_size || ''}">${change.packed_size || '-'}</td>
+            <td class="text-center">${change.old_quantity !== undefined && change.old_quantity !== null ? change.old_quantity : '-'}</td>
+            <td class="text-center">${change.new_quantity !== undefined && change.new_quantity !== null ? change.new_quantity : '-'}</td>
+            <td class="text-truncate" style="max-width: 180px;" title="${change.changes || ''}">${change.changes || '-'}</td>
           `;
           
           modalTbody.appendChild(row);
         });
+      } else {
+        // Show empty state
+        emptyState.classList.remove('d-none');
       }
       
       // Setup filter buttons for modal
@@ -2200,24 +2309,48 @@
 
     function setupModalFilterButtons() {
       const filterButtons = document.querySelectorAll('#comparisonModal [data-filter]');
-      const tableRows = document.querySelectorAll('#modal-comparison-tbody tr');
       
+      // Remove any existing event listeners by cloning buttons
       filterButtons.forEach(button => {
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+      });
+      
+      // Get the new button references after cloning
+      const newFilterButtons = document.querySelectorAll('#comparisonModal [data-filter]');
+      
+      newFilterButtons.forEach(button => {
         button.addEventListener('click', function() {
           // Update button states
-          filterButtons.forEach(btn => btn.classList.remove('active'));
+          newFilterButtons.forEach(btn => btn.classList.remove('active'));
           this.classList.add('active');
           
           const filter = this.dataset.filter;
+          const tableRows = document.querySelectorAll('#modal-comparison-tbody tr');
+          
+          let visibleCount = 0;
           
           // Filter table rows
           tableRows.forEach(row => {
             if (filter === 'all' || row.dataset.status === filter) {
               row.style.display = '';
+              visibleCount++;
             } else {
               row.style.display = 'none';
             }
           });
+          
+          // Show/hide empty state based on visible rows
+          const emptyState = document.getElementById('modal-empty-state');
+          if (visibleCount === 0 && tableRows.length > 0) {
+            emptyState.classList.remove('d-none');
+            emptyState.querySelector('h5').textContent = `No ${filter === 'all' ? '' : filter.charAt(0).toUpperCase() + filter.slice(1)} Changes Found`;
+            emptyState.querySelector('p').textContent = filter === 'all' ? 
+              'No comparison data available for this record.' : 
+              `No ${filter} changes found in the comparison results.`;
+          } else if (emptyState) {
+            emptyState.classList.add('d-none');
+          }
         });
       });
     }

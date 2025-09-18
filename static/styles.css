@@ -125,17 +125,43 @@ body {
   font-size: var(--font-size-xl);
   color: var(--primary-600) !important;
   letter-spacing: -0.025em;
+  margin: 0;
 }
 
 .brand-logo {
   height: 48px;
   width: auto;
   display: inline-block;
+  max-width: 200px;
+}
+
+.navbar-text {
+  white-space: nowrap;
+  margin: 0;
 }
 
 @media (max-width: 576px) {
   .brand-logo {
     height: 40px;
+    max-width: 150px;
+  }
+
+  .navbar-text {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile header adjustments */
+  .navbar-collapse {
+    text-align: center;
+  }
+
+  .navbar-collapse .d-flex.justify-content-center {
+    justify-content: center !important;
+    margin: 1rem 0;
+  }
+
+  .navbar-collapse .navbar-nav.me-auto {
+    margin-bottom: 1rem;
   }
 }
 
@@ -836,6 +862,83 @@ body {
   
   .navbar-brand {
     font-size: var(--font-size-lg);
+  }
+
+  /* Mobile header layout adjustments */
+  .navbar-collapse {
+    text-align: center;
+  }
+
+  .navbar-collapse .d-flex.justify-content-center {
+    justify-content: center !important;
+    margin: 1rem 0;
+  }
+
+  .navbar-collapse .navbar-nav.me-auto {
+    margin-bottom: 1rem;
+  }
+
+  .navbar-collapse .navbar-nav:last-child {
+    justify-content: center;
+  }
+
+  /* User status and logout button on mobile */
+  .navbar-nav .navbar-text {
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+
+  .navbar-nav .btn-outline-danger {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  /* Mobile navigation tabs */
+  .navbar-nav .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .navbar-nav .nav-link span {
+    white-space: nowrap;
+  }
+
+  /* Stack navigation vertically on very small screens */
+  @media (max-width: 576px) {
+    .navbar-collapse .d-flex.align-items-center.ms-lg-4 {
+      flex-direction: column;
+      align-items: stretch !important;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .navbar-collapse .nav-link {
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      margin: 0.25rem 0;
+    }
+
+    /* Better mobile layout for user status */
+    .navbar-collapse .navbar-nav:last-child {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .navbar-collapse .navbar-text {
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    .navbar-collapse .btn-outline-danger {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+    }
   }
   
   .btn-lg {

@@ -29,34 +29,72 @@
     
     <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}" aria-label="OrderAI Home">
-          <img src="{{ url_for('static', filename='images/logo_name.png') }}" alt="OrderAI" class="brand-logo me-2" />
-        </a>
-        
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMain" 
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMain"
                 aria-controls="navbarsMain" aria-expanded="false" aria-label="Toggle navigation menu">
           <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <div class="collapse navbar-collapse" id="navbarsMain">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}" 
-                 {% if request.endpoint == 'index' %}aria-current="page"{% endif %}>
-                <span>Single Mode</span>
+          <!-- Left Section: Navigation Only -->
+          <div class="navbar-nav me-auto">
+            <div class="d-flex align-items-center">
+              {% if session.get('packing_logged_in') and not session.get('raw_materials_logged_in') %}
+                <a class="nav-link me-3 active"
+                   href="{{ url_for('packing') }}"
+                   aria-current="page">
+                  <span>Packing</span>
+                </a>
+              {% elif session.get('raw_materials_logged_in') and not session.get('packing_logged_in') %}
+                <a class="nav-link me-3 active"
+                   href="{{ url_for('raw_materials') }}"
+                   aria-current="page">
+                  <span>Raw Materials</span>
+                </a>
+              {% else %}
+                <a class="nav-link me-3"
+                   href="{{ url_for('index') }}">
+                  <span>Home</span>
+                </a>
+              {% endif %}
+
+              <!-- CK Intelligence - Show for logged in users -->
+              {% if session.get('packing_logged_in') or session.get('raw_materials_logged_in') %}
+                <a class="nav-link me-3"
+                   href="{{ url_for('ckintelligence') }}">
+                  <i class="bi bi-robot me-1"></i>
+                  <span>CK Intelligence</span>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Center Section: Logo -->
+          <div class="d-flex justify-content-center flex-grow-1">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}" aria-label="OrderAI Home">
+              <img src="{{ url_for('static', filename='images/logo_name.png') }}" alt="OrderAI" class="brand-logo" />
+            </a>
+          </div>
+
+          <!-- Right Section: User Status and Theme Toggle -->
+          <div class="navbar-nav d-flex align-items-center">
+            {% if session.get('packing_logged_in') and not session.get('raw_materials_logged_in') %}
+              <span class="navbar-text text-muted me-3 small">
+                <i class="bi bi-person-circle me-1"></i>
+                Packing Module
+              </span>
+              <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm me-2" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
               </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('batch_index') }}"
-                 {% if request.endpoint == 'batch_index' %}aria-current="page"{% endif %}>
-                <span>Batch Mode</span>
+            {% elif session.get('raw_materials_logged_in') and not session.get('packing_logged_in') %}
+              <span class="navbar-text text-muted me-3 small">
+                <i class="bi bi-person-circle me-1"></i>
+                Raw Materials Module
+              </span>
+              <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm me-2" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
               </a>
-            </li>
-          </ul>
-          
-          <!-- Theme Toggle -->
-          <div class="navbar-nav">
-            <button id="theme-toggle" class="btn btn-outline-secondary btn-sm me-2" type="button" title="Toggle theme">
+            {% endif %}
+            <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" type="button" title="Toggle theme">
               <i id="theme-icon" class="bi bi-sun-fill"></i>
             </button>
           </div>

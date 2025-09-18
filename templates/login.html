@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Login - OrderAI Inventory Management System" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <title>Login - {{ module }} - OrderAI</title>
+
+    <!-- Preconnect to external domains for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+    <!-- Modern font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
+    <style>
+      /* Dark theme fixes for login page */
+      [data-bs-theme="dark"] .text-dark {
+        color: var(--text-primary) !important;
+      }
+
+      [data-bs-theme="dark"] .text-muted {
+        color: var(--text-secondary) !important;
+      }
+
+      [data-bs-theme="dark"] .card {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+      }
+
+      [data-bs-theme="dark"] .form-control,
+      [data-bs-theme="dark"] .form-select {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+      }
+
+      [data-bs-theme="dark"] .form-control:focus,
+      [data-bs-theme="dark"] .form-select:focus {
+        background-color: var(--bg-secondary);
+        border-color: #2563eb;
+        color: var(--text-primary);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(59, 130, 246, 0.05) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      [data-bs-theme="dark"] body {
+        background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(59, 130, 246, 0.1) 100%);
+      }
+
+      .login-card {
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border: none;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .login-header {
+        text-align: center;
+        padding: 2rem 1.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: white;
+        border-radius: 1rem 1rem 0 0;
+        margin: -1rem -1rem 0;
+      }
+
+      [data-bs-theme="dark"] .login-header {
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      }
+
+      .login-body {
+        padding: 2rem 1.5rem;
+      }
+
+      .login-footer {
+        text-align: center;
+        padding: 1rem 1.5rem 2rem;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-secondary);
+      }
+
+      .module-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+      }
+
+      .form-floating {
+        margin-bottom: 1rem;
+      }
+
+      .btn-login {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        border: none;
+        transition: all 0.2s ease;
+      }
+
+      .btn-login:hover {
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      }
+
+      [data-bs-theme="dark"] .btn-login:hover {
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+      }
+
+      .back-link {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+
+      .back-link:hover {
+        color: var(--primary-600);
+        text-decoration: underline;
+      }
+
+      .alert {
+        border-radius: 0.5rem;
+        border: none;
+        margin-bottom: 1.5rem;
+      }
+
+      .alert-success {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+      }
+
+      .alert-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      [data-bs-theme="dark"] .alert-success {
+        background-color: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+      }
+
+      [data-bs-theme="dark"] .alert-error {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+      }
+    </style>
+  </head>
+  <body class="d-flex flex-column min-vh-100" data-bs-theme="light">
+    <!-- Theme Toggle (top right) -->
+    <div class="position-absolute top-0 end-0 p-3">
+      <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" type="button" title="Toggle theme">
+        <i id="theme-icon" class="bi bi-sun-fill"></i>
+      </button>
+    </div>
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="card login-card">
+            <div class="login-header">
+              <div class="module-icon">
+                {% if module == "Packing" %}
+                  <i class="bi bi-boxes"></i>
+                {% else %}
+                  <i class="bi bi-tree"></i>
+                {% endif %}
+              </div>
+              <h2 class="h4 mb-1">{{ module }} Login</h2>
+              <p class="mb-0 opacity-75">Please enter your credentials</p>
+            </div>
+
+            <div class="login-body">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'error' else 'info' }}">
+                      <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"></i>
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+
+              <form method="post" action="{{ action_url }}">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="username" name="username"
+                         placeholder="Username" value="{{ username }}" required>
+                  <label for="username">
+                    <i class="bi bi-person me-2"></i>Username
+                  </label>
+                </div>
+
+                <div class="form-floating mb-4">
+                  <input type="password" class="form-control" id="password" name="password"
+                         placeholder="Password" required>
+                  <label for="password">
+                    <i class="bi bi-key me-2"></i>Password
+                  </label>
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>
+                  Login to {{ module }}
+                </button>
+              </form>
+            </div>
+
+            <div class="login-footer">
+              <p class="mb-2">
+                <a href="{{ url_for('index') }}" class="back-link">
+                  <i class="bi bi-arrow-left me-1"></i>
+                  Back to Main
+                </a>
+              </p>
+              <small class="text-muted">
+                {% if module == "Packing" %}
+                  Username: <strong>Packing</strong> | Password: <strong>123</strong>
+                {% else %}
+                  Username: <strong>RM</strong> | Password: <strong>1234</strong>
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme Toggle Script -->
+    <script>
+      // Theme toggle functionality
+      (function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+
+        // Get saved theme from localStorage or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+
+        // Set initial theme
+        setTheme(savedTheme);
+
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', function() {
+          const currentTheme = body.getAttribute('data-bs-theme');
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        });
+
+        function setTheme(theme) {
+          body.setAttribute('data-bs-theme', theme);
+          localStorage.setItem('theme', theme);
+
+          // Update icon
+          if (theme === 'dark') {
+            themeIcon.className = 'bi bi-moon-fill';
+            themeToggle.title = 'Switch to light theme';
+          } else {
+            themeIcon.className = 'bi bi-sun-fill';
+            themeToggle.title = 'Switch to dark theme';
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

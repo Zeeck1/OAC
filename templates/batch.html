@@ -158,17 +158,18 @@
               <!-- Upload Form -->
               <form class="needs-validation upload-form" method="post" action="{{ url_for('process_batch') }}" enctype="multipart/form-data" novalidate>
                 <div class="row g-4">
-                  <div class="col-12">
+                  <!-- Stock Files Row -->
+                  <div class="col-md-4">
                     <div class="upload-section">
                       <label class="form-label d-flex align-items-center">
                         <i class="bi bi-database me-2 text-primary"></i>
                         <span class="fw-semibold">Stock Excel/CSV File</span>
                         <span class="text-danger ms-1">*</span>
-                        <span class="badge bg-primary ms-auto">1 file required</span>
+                        <!-- <span class="badge bg-primary ms-auto">1 file required</span> -->
                       </label>
                       <div class="file-upload-wrapper">
-                        <input class="form-control file-input" type="file" name="stock_file" 
-                               accept=".xlsx,.xls,.csv" required id="stock-file" 
+                        <input class="form-control file-input" type="file" name="stock_file"
+                               accept=".xlsx,.xls,.csv" required id="stock-file"
                                aria-describedby="stock-file-help" />
                         <div class="file-upload-overlay">
                           <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
@@ -185,6 +186,54 @@
                     </div>
                   </div>
 
+                  <div class="col-md-4">
+                    <div class="upload-section">
+                      <label class="form-label d-flex align-items-center">
+                        <i class="bi bi-truck me-2 text-warning"></i>
+                        <span class="fw-semibold">Import Stock File</span>
+                        <!-- <span class="text-muted ms-1">(Optional)</span> -->
+                        <!-- <span class="badge bg-warning text-dark ms-auto">Additional stock</span> -->
+                      </label>
+                      <div class="file-upload-wrapper">
+                        <input class="form-control file-input" type="file" name="import_stock_file"
+                               accept=".xlsx,.xls,.csv" id="import-stock-file"
+                               aria-describedby="import-stock-file-help" />
+                        <div class="file-upload-overlay">
+                          <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
+                          <p class="text-muted mb-0">Drop import stock file here or click to browse</p>
+                        </div>
+                      </div>
+                      <div id="import-stock-file-help" class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Additional stock from imports (same format as regular stock)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="upload-section">
+                      <label class="form-label d-flex align-items-center">
+                        <i class="bi bi-box-seam me-2 text-info"></i>
+                        <span class="fw-semibold">Extra-Load Stock File</span>
+                        <!-- <span class="text-muted ms-1">(Optional)</span> -->
+                        <!-- <span class="badge bg-info text-dark ms-auto">Extra stock</span> -->
+                      </label>
+                      <div class="file-upload-wrapper">
+                        <input class="form-control file-input" type="file" name="extra_load_stock_file"
+                               accept=".xlsx,.xls,.csv" id="extra-load-stock-file"
+                               aria-describedby="extra-load-stock-file-help" />
+                        <div class="file-upload-overlay">
+                          <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
+                          <p class="text-muted mb-0">Drop extra-load stock file here or click to browse</p>
+                        </div>
+                      </div>
+                      <div id="extra-load-stock-file-help" class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Additional extra-load stock (same format as regular stock)
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="col-12">
                     <div class="upload-section">
                       <label class="form-label d-flex align-items-center">
@@ -194,7 +243,7 @@
                         <span class="badge bg-success ms-auto">Up to 32 files</span>
                       </label>
                       <div class="file-upload-wrapper" id="order-files-wrapper">
-                        <input class="form-control file-input" type="file" name="order_files" 
+                        <input class="form-control file-input" type="file" name="order_files"
                                multiple accept=".xlsx,.xls,.csv" required id="order-files"
                                aria-describedby="order-files-help" />
                         <div class="file-upload-overlay">

@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% block title %}Packing - OrderAI{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* Dark theme fixes for packing page */
+  [data-bs-theme="dark"] .text-dark {
+    color: var(--text-primary) !important;
+  }
+
+  [data-bs-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+  }
+
+  [data-bs-theme="dark"] .feature-badge {
+    color: var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .form-control,
+  [data-bs-theme="dark"] .form-select {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .form-control:focus,
+  [data-bs-theme="dark"] .form-select:focus {
+    background-color: var(--bg-secondary);
+    border-color: #2563eb;
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+  }
+
+  /* Custom styles for packing page */
+  .packing-section {
+    margin-bottom: 2rem;
+  }
+
+  .packing-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));
+    border: 1px solid rgba(59, 130, 246, 0.1);
+  }
+
+  [data-bs-theme="dark"] .packing-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Batch history styles */
+  .batch-item {
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background: var(--card-bg);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .batch-item:hover {
+    border-color: var(--primary-300);
+    background: rgba(59, 130, 246, 0.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-bs-theme="dark"] .batch-item:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: var(--primary-500);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .batch-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .batch-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .batch-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .batch-files {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--primary-600);
+  }
+
+  [data-bs-theme="dark"] .file-info {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--primary-400);
+  }
+
+  .batch-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  [data-bs-theme="dark"] .stat-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container px-4 py-5">
+  <!-- Page Header -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div class="mb-4 mb-md-0">
+          <h1 class="display-6 fw-bold text-gradient mb-2">Packing</h1>
+          <p class="lead text-muted">Manage packing operations and inventory</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <span class="feature-badge">
+            <i class="bi bi-boxes me-2"></i>
+            Packing Module
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packing Dashboard -->
+  <div class="row g-4 mb-5">
+    <div class="col-lg-3 col-md-6">
+      <div class="card stat-card packing-card h-100">
+        <div class="card-body d-flex flex-column justify-content-center">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="stat-icon">
+              <i class="bi bi-box-seam-fill fs-1 text-primary"></i>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="label">Total Orders</div>
+            <div class="value">124</div>
+            <div class="small text-muted">Ready for packing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card stat-card packing-card h-100">
+        <div class="card-body d-flex flex-column justify-content-center">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="stat-icon">
+              <i class="bi bi-truck-fill fs-1 text-success"></i>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="label">In Progress</div>
+            <div class="value">38</div>
+            <div class="small text-muted">Currently packing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card stat-card packing-card h-100">
+        <div class="card-body d-flex flex-column justify-content-center">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="stat-icon">
+              <i class="bi bi-check-circle-fill fs-1 text-info"></i>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="label">Completed</div>
+            <div class="value">86</div>
+            <div class="small text-muted">This week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card stat-card packing-card h-100">
+        <div class="card-body d-flex flex-column justify-content-center">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="stat-icon">
+              <i class="bi bi-exclamation-triangle-fill fs-1 text-warning"></i>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="label">Pending</div>
+            <div class="value">12</div>
+            <div class="small text-muted">Waiting materials</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Processing History Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card animate-in">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Processing History</h5>
+          <span class="badge bg-primary">{{ recent_sessions|length if recent_sessions else 0 }} batches</span>
+        </div>
+        <div class="card-body">
+          {% if recent_sessions %}
+            {% for session in recent_sessions %}
+            <div class="batch-item" onclick="window.location.href='{{ url_for('batch_details', session_id=session.id) }}'">
+              <div class="batch-header">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">
+                    <i class="bi bi-folder-fill text-primary me-2"></i>
+                    Batch #{{ session.id }}
+                    {% if session.batch_token %}
+                      <small class="text-muted">({{ session.batch_token[:8] }}...)</small>
+                    {% endif %}
+                  </h6>
+                  <div class="batch-meta">
+                    <div class="batch-meta-item">
+                      <i class="bi bi-calendar-event"></i>
+                      {{ session.created_at }}
+                    </div>
+                    <div class="batch-meta-item">
+                      <i class="bi bi-clock"></i>
+                      {{ session.processing_type|title }} Mode
+                    </div>
+                    <div class="batch-meta-item">
+                      <i class="bi bi-files"></i>
+                      {{ session.stock_files }} stock, {{ session.order_files }} order files
+                    </div>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <i class="bi bi-chevron-right text-muted fs-5"></i>
+                </div>
+              </div>
+
+              {% if session.stock_filename or session.order_filenames %}
+              <div class="batch-files">
+                {% if session.stock_filename %}
+                <div class="file-info">
+                  <i class="bi bi-file-earmark-spreadsheet"></i>
+                  <span>Stock: {{ session.stock_filename }}</span>
+                </div>
+                {% endif %}
+                {% if session.order_filenames %}
+                <div class="file-info">
+                  <i class="bi bi-files"></i>
+                  <span>Orders: {{ session.order_filenames }}</span>
+                </div>
+                {% endif %}
+              </div>
+              {% endif %}
+
+              <div class="batch-stats">
+                <div class="stat-item">
+                  <div class="stat-value text-success">{{ session.full_items }}</div>
+                  <div class="stat-label">Full Orders</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value text-warning">{{ session.not_full_items }}</div>
+                  <div class="stat-label">Partial</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value text-danger">{{ session.not_have_items }}</div>
+                  <div class="stat-label">Not Available</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">{{ session.total_items }}</div>
+                  <div class="stat-label">Total Items</div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-folder-x fs-1 text-muted mb-3"></i>
+              <h6 class="text-muted">No Processing History</h6>
+              <p class="text-muted small">No batches have been processed yet.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packing Operations Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card animate-in">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Packing Operations</h5>
+          <button class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            New Packing Order
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <h6 class="card-title mb-3">Quick Actions</h6>
+              <div class="d-flex flex-column gap-2">
+                <button class="btn btn-outline-primary w-100 text-start">
+                  <i class="bi bi-search me-2"></i>
+                  Search Orders
+                </button>
+                <button class="btn btn-outline-success w-100 text-start">
+                  <i class="bi bi-barcode me-2"></i>
+                  Scan Barcodes
+                </button>
+                <button class="btn btn-outline-info w-100 text-start">
+                  <i class="bi bi-printer me-2"></i>
+                  Print Labels
+                </button>
+                <button class="btn btn-outline-warning w-100 text-start">
+                  <i class="bi bi-clipboard-check me-2"></i>
+                  Quality Check
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="card-title mb-3">Recent Activity</h6>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item px-0">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">Order #PO-2024-001</h6>
+                    <small class="text-muted">2 min ago</small>
+                  </div>
+                  <p class="mb-1 text-muted small">Started packing - 50 cartons</p>
+                </div>
+                <div class="list-group-item px-0">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">Order #PO-2024-002</h6>
+                    <small class="text-muted">15 min ago</small>
+                  </div>
+                  <p class="mb-1 text-muted small">Quality check completed</p>
+                </div>
+                <div class="list-group-item px-0">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">Order #PO-2024-003</h6>
+                    <small class="text-muted">1 hour ago</small>
+                  </div>
+                  <p class="mb-1 text-muted small">Shipped successfully</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

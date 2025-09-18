@@ -1,0 +1,1709 @@
+{% extends 'base.html' %}
+{% block title %}Batch Details - OrderAI{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* Dark theme fixes for batch details page */
+  [data-bs-theme="dark"] .text-dark {
+    color: var(--text-primary) !important;
+  }
+
+  [data-bs-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+  }
+
+  [data-bs-theme="dark"] .feature-badge {
+    color: var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .form-control,
+  [data-bs-theme="dark"] .form-select {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .form-control:focus,
+  [data-bs-theme="dark"] .form-select:focus {
+    background-color: var(--bg-secondary);
+    border-color: #2563eb;
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+  }
+
+  /* Custom styles for batch details */
+  .batch-header {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: white;
+    border-radius: 1rem 1rem 0 0;
+    padding: 2rem;
+    margin: -1rem -1rem 0;
+  }
+
+  [data-bs-theme="dark"] .batch-header {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  }
+
+  .batch-info-card {
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+  }
+
+  .file-list-item {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+  }
+
+  .file-list-item:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: var(--primary-300);
+  }
+
+  [data-bs-theme="dark"] .file-list-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-bs-theme="dark"] .file-list-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-500);
+  }
+
+  .file-type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+
+  .file-type-stock {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+  }
+
+  .file-type-order {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  .file-type-import-stock {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+  }
+
+  .file-type-extra-load-stock {
+    background-color: rgba(13, 148, 136, 0.1);
+    color: #0d9488;
+  }
+
+  [data-bs-theme="dark"] .file-type-stock {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+  }
+
+  [data-bs-theme="dark"] .file-type-order {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  [data-bs-theme="dark"] .file-type-import-stock {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+  }
+
+  [data-bs-theme="dark"] .file-type-extra-load-stock {
+    background-color: rgba(13, 148, 136, 0.2);
+    color: #14b8a6;
+  }
+
+  .revision-badge {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+  }
+
+  [data-bs-theme="dark"] .revision-badge {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+  }
+
+  /* Remove base table row colors to let status colors show */
+
+  /* Full View Table Row Colors */
+  .table tbody tr.status-full {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    border-left: 4px solid #28a745;
+  }
+  
+  .table tbody tr.status-not-full {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-left: 4px solid #ffc107;
+  }
+  
+  .table tbody tr.status-not-have {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-left: 4px solid #dc3545;
+  }
+  
+  /* Dark theme row colors - subtle visibility */
+  [data-bs-theme="dark"] .table tbody tr.status-full {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    border-left: 3px solid #4ade80;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-full td {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-full {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    border-left: 3px solid #fbbf24;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-full td {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-have {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border-left: 3px solid #f87171;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-have td {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+  }
+  
+  /* Hover effects for full view table */
+  .table tbody tr.status-full:hover {
+    background-color: rgba(40, 167, 69, 0.2) !important;
+  }
+  
+  .table tbody tr.status-not-full:hover {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+  }
+  
+  .table tbody tr.status-not-have:hover {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+  }
+  
+  /* Dark theme hover effects - subtle enhancement */
+  [data-bs-theme="dark"] .table tbody tr.status-full:hover {
+    background-color: rgba(40, 167, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-full:hover td {
+    background-color: rgba(40, 167, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-full:hover {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-full:hover td {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-have:hover {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] .table tbody tr.status-not-have:hover td {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+  }
+  
+  /* Full Table View Dark Mode Fixes for Batch Details */
+  [data-bs-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+  }
+  
+  [data-bs-theme="dark"] .modal-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
+  
+  [data-bs-theme="dark"] .modal-title {
+    color: var(--text-primary);
+  }
+  
+  /* Full table search section dark mode */
+  [data-bs-theme="dark"] .bg-light {
+    background-color: var(--bg-secondary) !important;
+    border-bottom-color: var(--border-color) !important;
+  }
+  
+  /* Full table dark mode styling */
+  [data-bs-theme="dark"] #fullProcessingTable {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable thead th {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody td {
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+  }
+  
+  /* Default background for cells without status */
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr:not(.status-full):not(.status-not-full):not(.status-not-have) td {
+    background-color: var(--card-bg) !important;
+  }
+  
+  /* Override table-dark class in dark mode */
+  [data-bs-theme="dark"] .table-dark {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+  
+  [data-bs-theme="dark"] .table-dark th {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+  }
+  
+  /* Full table row status colors in dark mode - subtle visibility */
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    border-left: 3px solid #4ade80;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full td {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    border-left: 3px solid #fbbf24;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full td {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border-left: 3px solid #f87171;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have td {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+  }
+  
+  /* Full table hover effects in dark mode - subtle enhancement */
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full:hover {
+    background-color: rgba(40, 167, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-full:hover td {
+    background-color: rgba(40, 167, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full:hover {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-full:hover td {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have:hover {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+  }
+  
+  [data-bs-theme="dark"] #fullProcessingTable tbody tr.status-not-have:hover td {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+  }
+  
+  /* Fix text-danger class in dark mode */
+  [data-bs-theme="dark"] .text-danger {
+    color: #ff6b6b !important;
+  }
+  
+  /* Fix badge colors in dark mode */
+  [data-bs-theme="dark"] .badge.bg-primary {
+    background-color: #2563eb !important;
+    color: white !important;
+  }
+  
+  [data-bs-theme="dark"] .badge.bg-success {
+    background-color: #16a34a !important;
+    color: white !important;
+  }
+  
+  [data-bs-theme="dark"] .badge.bg-warning {
+    background-color: #eab308 !important;
+    color: #000 !important;
+  }
+  
+  [data-bs-theme="dark"] .badge.bg-secondary {
+    background-color: #6b7280 !important;
+    color: white !important;
+  }
+
+  .table-responsive {
+    border-radius: 0.5rem;
+    overflow: auto;
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+    position: relative;
+  }
+
+  /* Add scroll hint for users */
+  .table-responsive::after {
+    content: "↔ Scroll horizontally to see all columns";
+    position: absolute;
+    top: -25px;
+    right: 10px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    opacity: 0.7;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Hide scroll hint initially, show only when needed */
+  .table-responsive:not(.scrollable)::after {
+    display: none;
+  }
+
+  /* Show scroll hint when table is scrollable */
+  .table-responsive.scrollable::after {
+    display: block;
+  }
+
+  /* Add fade effect for scroll hint */
+  .table-responsive.scrollable::after {
+    animation: fadeInScrollHint 0.5s ease-in-out;
+  }
+
+  @keyframes fadeInScrollHint {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 0.7; transform: translateY(0); }
+  }
+
+  /* Hide scroll hint on mobile where it's not needed */
+  @media (max-width: 768px) {
+    .table-responsive::after {
+      display: none;
+    }
+  }
+
+  /* Custom scrollbar styling for horizontal scroll */
+  .table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  /* Ensure table doesn't shrink columns unnecessarily */
+  .table-responsive table {
+    min-width: 100%;
+    white-space: nowrap;
+  }
+
+  /* Make important columns have minimum widths */
+  .table-responsive th:nth-child(1),
+  .table-responsive td:nth-child(1) {
+    min-width: 120px; /* Order column */
+  }
+
+  .table-responsive th:nth-child(2),
+  .table-responsive td:nth-child(2) {
+    min-width: 150px; /* Fish Name column */
+  }
+
+  .table-responsive th:nth-child(3),
+  .table-responsive td:nth-child(3) {
+    min-width: 120px; /* Packed Size column */
+  }
+
+  /* Ensure numeric columns are reasonably sized */
+  .table-responsive th:nth-child(n+4),
+  .table-responsive td:nth-child(n+4) {
+    min-width: 100px;
+    text-align: center;
+  }
+
+  /* Sticky table header for better scrolling experience */
+  .table-responsive thead th {
+    position: sticky;
+    top: 0;
+    background-color: var(--table-header-bg, #f8f9fa);
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Dark theme support for sticky header */
+  [data-bs-theme="dark"] .table-responsive thead th {
+    background-color: var(--table-header-bg-dark, #343a40);
+    color: var(--text-primary);
+  }
+
+  /* Add subtle border to indicate scrollable content */
+  .table-responsive {
+    border: 1px solid var(--border-color);
+  }
+
+  /* Responsive adjustments for mobile */
+  @media (max-width: 768px) {
+    .table-responsive {
+      font-size: 0.875rem;
+    }
+
+    .table-responsive th,
+    .table-responsive td {
+      padding: 0.5rem 0.25rem;
+    }
+
+    .table-responsive th:nth-child(1),
+    .table-responsive td:nth-child(1) {
+      min-width: 100px;
+    }
+
+    .table-responsive th:nth-child(2),
+    .table-responsive td:nth-child(2) {
+      min-width: 120px;
+    }
+  }
+
+  /* Ensure content fits within container width */
+  .container {
+    max-width: 1140px; /* Match Bootstrap's lg container width */
+  }
+
+  /* Responsive table adjustments */
+  @media (max-width: 768px) {
+    .container {
+      max-width: 100%;
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+  }
+
+  .back-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  /* Live update indicator animation */
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container px-4 py-5">
+  <!-- Batch Header -->
+  <div class="card batch-info-card mb-4">
+    <div class="batch-header">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 class="h3 mb-2">Batch Details</h1>
+          <p class="mb-3 opacity-90">Session ID: {{ session_info.id }} | Created: {{ session_info.created_at }}</p>
+          <div class="d-flex gap-4">
+            <div>
+              <strong>Total Items:</strong> {{ session_info.total_items }}
+            </div>
+            <div>
+              <strong>Full Orders:</strong> <span class="text-success">{{ session_info.full_items }}</span>
+            </div>
+            <div>
+              <strong>Partial:</strong> <span class="text-warning">{{ session_info.not_full_items }}</span>
+            </div>
+            <div>
+              <strong>Not Available:</strong> <span class="text-danger">{{ session_info.not_have_items }}</span>
+            </div>
+          </div>
+        </div>
+        <a href="javascript:history.back()" class="back-button">
+          <i class="bi bi-arrow-left me-2"></i>
+          Back
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Files Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card batch-info-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Uploaded Files</h5>
+          <span class="badge bg-primary">{{ files.stock|length + files.import_stock|length + files.extra_load_stock|length + files.order|length }} files</span>
+        </div>
+        <div class="card-body">
+          <!-- Stock Files -->
+          {% if files.stock %}
+          <div class="mb-4">
+            <h6 class="mb-3">
+              <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>
+              Stock Files
+            </h6>
+            {% for file in files.stock %}
+            <div class="file-list-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="file-type-badge file-type-stock">Stock</span>
+                    {% if file.is_revision %}
+                    <span class="file-type-badge revision-badge">Revision</span>
+                    {% endif %}
+                  </div>
+                  <h6 class="mb-1">{{ file.original_filename }}</h6>
+                  {% if file.revision_note %}
+                  <p class="text-muted small mb-1">{{ file.revision_note }}</p>
+                  {% endif %}
+                  <div class="text-muted small">
+                    Size: {{ "%.1f"|format(file.file_size / 1024 / 1024) }} MB |
+                    Uploaded: {{ file.uploaded_at }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <button class="btn btn-sm btn-outline-primary" onclick="alert('File download not implemented yet')">
+                    <i class="bi bi-download me-1"></i>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Import Stock Files -->
+          {% if files.import_stock %}
+          <div class="mb-4">
+            <h6 class="mb-3">
+              <i class="bi bi-truck text-warning me-2"></i>
+              Import Stock Files
+            </h6>
+            {% for file in files.import_stock %}
+            <div class="file-list-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="file-type-badge file-type-import-stock">Import Stock</span>
+                    {% if file.is_revision %}
+                    <span class="file-type-badge revision-badge">Revision</span>
+                    {% endif %}
+                  </div>
+                  <h6 class="mb-1">{{ file.original_filename }}</h6>
+                  {% if file.revision_note %}
+                  <p class="text-muted small mb-1">{{ file.revision_note }}</p>
+                  {% endif %}
+                  <div class="text-muted small">
+                    Size: {{ "%.1f"|format(file.file_size / 1024 / 1024) }} MB |
+                    Uploaded: {{ file.uploaded_at }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <button class="btn btn-sm btn-outline-primary" onclick="alert('File download not implemented yet')">
+                    <i class="bi bi-download me-1"></i>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Extra-Load Stock Files -->
+          {% if files.extra_load_stock %}
+          <div class="mb-4">
+            <h6 class="mb-3">
+              <i class="bi bi-box-seam text-info me-2"></i>
+              Extra-Load Stock Files
+            </h6>
+            {% for file in files.extra_load_stock %}
+            <div class="file-list-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="file-type-badge file-type-extra-load-stock">Extra-Load Stock</span>
+                    {% if file.is_revision %}
+                    <span class="file-type-badge revision-badge">Revision</span>
+                    {% endif %}
+                  </div>
+                  <h6 class="mb-1">{{ file.original_filename }}</h6>
+                  {% if file.revision_note %}
+                  <p class="text-muted small mb-1">{{ file.revision_note }}</p>
+                  {% endif %}
+                  <div class="text-muted small">
+                    Size: {{ "%.1f"|format(file.file_size / 1024 / 1024) }} MB |
+                    Uploaded: {{ file.uploaded_at }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <button class="btn btn-sm btn-outline-primary" onclick="alert('File download not implemented yet')">
+                    <i class="bi bi-download me-1"></i>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Order Files -->
+          {% if files.order %}
+          <div>
+            <h6 class="mb-3">
+              <i class="bi bi-files text-primary me-2"></i>
+              Order Files ({{ files.order|length }})
+            </h6>
+            {% for file in files.order %}
+            <div class="file-list-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="file-type-badge file-type-order">Order</span>
+                    {% if file.is_revision %}
+                    <span class="file-type-badge revision-badge">Revision</span>
+                    {% endif %}
+                  </div>
+                  <h6 class="mb-1">{{ file.original_filename }}</h6>
+                  {% if file.revision_note %}
+                  <p class="text-muted small mb-1">{{ file.revision_note }}</p>
+                  {% endif %}
+                  <div class="text-muted small">
+                    Size: {{ "%.1f"|format(file.file_size / 1024 / 1024) }} MB |
+                    Uploaded: {{ file.uploaded_at }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <button class="btn btn-sm btn-outline-primary" onclick="alert('File download not implemented yet')">
+                    <i class="bi bi-download me-1"></i>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if not files.stock and not files.import_stock and not files.extra_load_stock and not files.order %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-file-earmark-x fs-1 mb-3"></i>
+            <p>No files found for this batch.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing Results -->
+  {% if results %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card batch-info-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Processing Results</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-info">{{ results|length }} items</span>
+            <span id="liveUpdateIndicator" class="badge bg-success" style="display: none;">
+              <i class="bi bi-circle-fill" style="animation: pulse 2s infinite;"></i> Live
+            </span>
+            <button class="btn btn-outline-primary btn-sm" onclick="openFullTableView()">
+              <i class="bi bi-arrows-fullscreen me-1"></i>
+              Full View
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Search Bar -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control" id="tableSearch" placeholder="Search table...">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6 text-end">
+              <small class="text-muted" id="searchResults">Showing all {{ results|length }} results</small>
+            </div>
+          </div>
+
+          <div class="table-responsive" title="Scroll horizontally to see all columns">
+            <table class="table table-hover" id="processingTable">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Fish Name</th>
+                  <th>Packed Size</th>
+                  {% if session.get('packing_logged_in') %}
+                    <th>Order CTN</th>
+                    <th>Stock CTN</th>
+                    <th>Status</th>
+                    <th>Can Fulfill</th>
+                    <th>Shortfall</th>
+                    <th>Remark</th>
+                  {% else %}
+                    <th>Order KG</th>
+                    <th>Stock KG</th>
+                    <th>Status</th>
+                    <th>Can Fulfill KG</th>
+                    <th>Shortfall KG</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for result in results %}
+                <tr>
+                  <td>
+                    {% if result.get('order_filename') %}
+                      {% set order_code = result.order_filename.split('_')[1] if result.order_filename.count('_') >= 2 else result.order_filename.split('.')[0] %}
+                      <span class="badge bg-light text-dark">{{ order_code }}</span>
+                    {% else %}
+                      <span class="text-muted">N/A</span>
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ result.get('fish_name', 'N/A') }}</strong></td>
+                  <td>{{ result.get('packed_size', 'N/A') }}</td>
+
+                  {% if session.get('packing_logged_in') %}
+                    <!-- Packing Module: Show CTN values and Remark -->
+                    <td class="text-end">{{ result.get('order_carton', 0) }}</td>
+                    <td class="text-end">{{ result.get('stock_carton', 0) }}</td>
+                    <td>
+                      {% if result.get('can_fulfill_carton', 0) == result.get('order_carton', 0) %}
+                        <span class="status-indicator status-full">
+                          <i class="bi bi-check-circle-fill"></i>
+                          Full
+                        </span>
+                      {% elif result.get('can_fulfill_carton', 0) > 0 %}
+                        <span class="status-indicator status-partial">
+                          <i class="bi bi-dash-circle-fill"></i>
+                          Partial
+                        </span>
+                      {% else %}
+                        <span class="status-indicator status-none">
+                          <i class="bi bi-x-circle-fill"></i>
+                          None
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end"><strong>{{ result.get('can_fulfill_carton', 0) }}</strong></td>
+                    <td class="text-end text-danger"><strong>{{ result.get('shortfall', 0) }}</strong></td>
+                    <td>
+                      {% if result.get('remark') %}
+                        <span class="badge bg-info text-dark">{{ result.get('remark') }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  {% else %}
+                    <!-- Raw Materials Module: Show only KG values -->
+                    {% set order_kg = result.get('order_carton', 0) * result.get('order_kg_per_ctn', 1) %}
+                    {% set stock_kg = result.get('stock_carton', 0) * result.get('stock_kg_per_ctn', 1) %}
+                    {% set can_fulfill_kg = result.get('can_fulfill_carton', 0) * result.get('order_kg_per_ctn', 1) %}
+                    {% set shortfall_kg = (result.get('order_carton', 0) - result.get('can_fulfill_carton', 0)) * result.get('order_kg_per_ctn', 1) %}
+
+                    <td class="text-end">{{ "%.1f"|format(order_kg) }}</td>
+                    <td class="text-end">{{ "%.1f"|format(stock_kg) }}</td>
+                    <td>
+                      {% if can_fulfill_kg == order_kg %}
+                        <span class="status-indicator status-full">
+                          <i class="bi bi-check-circle-fill"></i>
+                          Full
+                        </span>
+                      {% elif can_fulfill_kg > 0 %}
+                        <span class="status-indicator status-partial">
+                          <i class="bi bi-dash-circle-fill"></i>
+                          Partial
+                        </span>
+                      {% else %}
+                        <span class="status-indicator status-none">
+                          <i class="bi bi-x-circle-fill"></i>
+                          None
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end"><strong>{{ "%.1f"|format(can_fulfill_kg) }}</strong></td>
+                    <td class="text-end text-danger"><strong>{{ "%.1f"|format(shortfall_kg) }}</strong></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+                {% if not results %}
+                <tr>
+                  <td colspan="{% if session.get('packing_logged_in') %}9{% else %}8{% endif %}" class="text-center text-muted py-4">
+                    <i class="bi bi-table fs-1 mb-3"></i>
+                    <p>No processing results available for this batch.</p>
+                    <small>This might be because the batch is still processing or no results were generated.</small>
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Full Table View Modal -->
+<div class="modal fade" id="fullTableModal" tabindex="-1" aria-labelledby="fullTableModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fullTableModalLabel">
+          <i class="bi bi-table me-2"></i>
+          Processing Results - Full View
+        </h5>
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge bg-primary" id="fullTableItemCount">{{ results|length }} items</span>
+          <button type="button" class="btn btn-outline-success btn-sm" onclick="exportTableToCSV()">
+            <i class="bi bi-download me-1"></i>
+            Export CSV
+          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0">
+        <!-- Enhanced Search and Filters -->
+        <div class="bg-light p-3 border-bottom">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control" id="fullTableSearch" placeholder="Search all columns...">
+                <button class="btn btn-outline-secondary" type="button" id="clearFullSearch">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <select class="form-select" id="orderCodeFilter">
+                <option value="">All Order Codes</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select class="form-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="Full">Full</option>
+                <option value="Partial">Partial</option>
+                <option value="None">None</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="fishFilter">
+                <option value="">All Fish Types</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-outline-primary w-100" onclick="resetFilters()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <small class="text-muted" id="fullTableSearchResults">Showing all {{ results|length }} results</small>
+            </div>
+            <div class="col-md-6 text-end">
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Scroll horizontally to see all columns
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Table -->
+        <div class="table-responsive" style="height: calc(100vh - 200px); overflow: auto;">
+          <table class="table table-hover" id="fullProcessingTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="min-width: 100px;">Order Code</th>
+                <th style="min-width: 150px;">Fish Name</th>
+                <th style="min-width: 120px;">Packed Size</th>
+                {% if session.get('packing_logged_in') %}
+                  <th style="min-width: 100px;">Order CTN</th>
+                  <th style="min-width: 100px;">Stock CTN</th>
+                  <th style="min-width: 100px;">Stock KG/CTN</th>
+                  <th style="min-width: 100px;">Order KG/CTN</th>
+                  <th style="min-width: 120px;">Status</th>
+                  <th style="min-width: 100px;">Can Fulfill</th>
+                  <th style="min-width: 100px;">Shortfall</th>
+                  <th style="min-width: 100px;">Total Order KG</th>
+                  <th style="min-width: 100px;">Total Stock KG</th>
+                  <th style="min-width: 100px;">Can Fulfill KG</th>
+                  <th style="min-width: 100px;">Shortfall KG</th>
+                  <th style="min-width: 120px;">Remark</th>
+                  <th style="min-width: 120px;">File Uploaded</th>
+                {% else %}
+                  <th style="min-width: 100px;">Order KG</th>
+                  <th style="min-width: 100px;">Stock KG</th>
+                  <th style="min-width: 120px;">Status</th>
+                  <th style="min-width: 100px;">Can Fulfill KG</th>
+                  <th style="min-width: 100px;">Shortfall KG</th>
+                  <th style="min-width: 100px;">Order CTN</th>
+                  <th style="min-width: 100px;">Stock CTN</th>
+                  <th style="min-width: 100px;">Stock KG/CTN</th>
+                  <th style="min-width: 100px;">Order KG/CTN</th>
+                  <th style="min-width: 120px;">File Uploaded</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody id="fullTableBody">
+              <!-- Data will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Update and Table Search Functionality -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('tableSearch');
+    const clearButton = document.getElementById('clearSearch');
+    const table = document.getElementById('processingTable');
+    const tbody = table.querySelector('tbody');
+    const searchResults = document.getElementById('searchResults');
+    const liveUpdateIndicator = document.getElementById('liveUpdateIndicator');
+    const sessionId = parseInt('{{ session_info.id }}', 10);
+    const isPackingModule = {{ 'true' if session.get('packing_logged_in') else 'false' }};
+    
+    let originalRows = [];
+    let updateInterval;
+    let lastUpdateTimestamp = 0;
+
+    // Initialize original rows
+    function updateOriginalRows() {
+      const rows = tbody.querySelectorAll('tr');
+      originalRows = Array.from(rows).filter(row => !row.querySelector('td[colspan]'));
+    }
+    
+    updateOriginalRows();
+
+    // Check table scrollability on page load
+    setTimeout(() => {
+      checkTableScrollability();
+    }, 100);
+
+    function filterTable(searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      let visibleCount = 0;
+
+      originalRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let rowText = '';
+
+        // Get text from all cells except the status cell (which has HTML)
+        cells.forEach((cell, index) => {
+          // Skip status column (index 5 for both modules)
+          if (index !== 5) {
+            rowText += cell.textContent.toLowerCase() + ' ';
+          }
+        });
+
+        if (rowText.includes(term)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Update search results count
+      if (term === '') {
+        searchResults.textContent = `Showing all ${originalRows.length} results`;
+      } else {
+        searchResults.textContent = `Found ${visibleCount} of ${originalRows.length} results for "${searchTerm}"`;
+      }
+    }
+
+    window.formatNumber = function(value) {
+      return parseFloat(value).toFixed(1);
+    }
+
+    window.getStatusBadge = function(canFulfill, orderAmount) {
+      if (canFulfill == orderAmount) {
+        return `<span class="status-indicator status-full">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Full
+                </span>`;
+      } else if (canFulfill > 0) {
+        return `<span class="status-indicator status-partial">
+                  <i class="bi bi-dash-circle-fill"></i>
+                  Partial
+                </span>`;
+      } else {
+        return `<span class="status-indicator status-none">
+                  <i class="bi bi-x-circle-fill"></i>
+                  None
+                </span>`;
+      }
+    }
+
+    function updateProcessingTable(results) {
+      console.log('Updating processing table with', results.length, 'results');
+      if (results.length > 0) {
+        console.log('First result sample:', results[0]);
+      }
+      
+      // Clear existing tbody
+      tbody.innerHTML = '';
+
+      if (!results || results.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${isPackingModule ? '9' : '8'}" class="text-center text-muted py-4">
+              <i class="bi bi-table fs-1 mb-3"></i>
+              <p>No processing results available for this batch.</p>
+              <small>This might be because the batch is still processing or no results were generated.</small>
+            </td>
+          </tr>
+        `;
+        updateOriginalRows();
+        return;
+      }
+
+      results.forEach(result => {
+        const orderCode = result.order_filename ? 
+          (result.order_filename.split('_').length >= 3 ? 
+           result.order_filename.split('_')[1] : 
+           result.order_filename.split('.')[0]) : 'N/A';
+
+        let row = `
+          <tr>
+            <td>
+              ${result.order_filename ? 
+                `<span class="badge bg-light text-dark">${orderCode}</span>` : 
+                '<span class="text-muted">N/A</span>'}
+            </td>
+            <td><strong>${result.fish_name || 'N/A'}</strong></td>
+            <td>${result.packed_size || 'N/A'}</td>
+        `;
+
+        if (isPackingModule) {
+          // Packing Module: Show CTN values and Remark
+          row += `
+            <td class="text-end">${result.order_carton || 0}</td>
+            <td class="text-end">${result.stock_carton || 0}</td>
+            <td>${getStatusBadge(result.can_fulfill_carton || 0, result.order_carton || 0)}</td>
+            <td class="text-end"><strong>${result.can_fulfill_carton || 0}</strong></td>
+            <td class="text-end text-danger"><strong>${result.shortfall || 0}</strong></td>
+            <td>
+              ${result.remark ? 
+                `<span class="badge bg-info text-dark">${result.remark}</span>` : 
+                '<span class="text-muted">-</span>'}
+            </td>
+          `;
+        } else {
+          // Raw Materials Module: Show KG values
+          const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+          const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+          const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+          const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+          row += `
+            <td class="text-end">${formatNumber(orderKg)}</td>
+            <td class="text-end">${formatNumber(stockKg)}</td>
+            <td>${getStatusBadge(canFulfillKg, orderKg)}</td>
+            <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+            <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+          `;
+        }
+
+        row += '</tr>';
+        tbody.innerHTML += row;
+      });
+
+      updateOriginalRows();
+
+      // Check if table needs horizontal scrolling and add indicator
+      checkTableScrollability();
+      
+      // Reapply current search filter if any
+      const currentSearchTerm = searchInput.value;
+      if (currentSearchTerm.trim()) {
+        filterTable(currentSearchTerm);
+      } else {
+        searchResults.textContent = `Showing all ${originalRows.length} results`;
+      }
+    }
+
+    function checkTableScrollability() {
+      const tableResponsive = document.querySelector('.table-responsive');
+      const table = document.getElementById('processingTable');
+
+      if (!tableResponsive || !table) return;
+
+      // Check if table content is wider than container
+      const tableWidth = table.offsetWidth;
+      const containerWidth = tableResponsive.offsetWidth;
+
+      if (tableWidth > containerWidth + 10) { // 10px buffer
+        tableResponsive.classList.add('scrollable');
+        console.log('Table is scrollable - added scroll indicator');
+      } else {
+        tableResponsive.classList.remove('scrollable');
+      }
+    }
+
+    function updateBatchSummary(summary) {
+      // Update the batch header summary numbers
+      const totalElement = document.querySelector('.batch-header strong');
+      if (totalElement && totalElement.textContent.includes('Total Items:')) {
+        totalElement.textContent = `Total Items: ${summary.total_items || 0}`;
+      }
+      
+      // Update badge count
+      const badgeElement = document.querySelector('.badge.bg-info');
+      if (badgeElement) {
+        badgeElement.textContent = `${(summary.total_items || 0)} items`;
+      }
+    }
+
+    function fetchUpdatedResults() {
+      fetch(`/api/batch/${sessionId}/results`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('API Response:', {
+              resultCount: data.results.length,
+              timestamp: data.timestamp,
+              lastUpdateTimestamp: lastUpdateTimestamp,
+              debug: data.debug
+            });
+
+            // Always update if we received data, regardless of timestamp for debugging
+            // This helps identify if the issue is with timestamp comparison or data retrieval
+            if (data.results.length > 0) {
+              updateProcessingTable(data.results);
+              updateBatchSummary(data.summary);
+              lastUpdateTimestamp = data.timestamp;
+              console.log('Batch results updated with', data.results.length, 'items');
+              
+              // Show a small indicator that update happened
+              if (data.timestamp > lastUpdateTimestamp || data.results.length !== originalRows.length) {
+                console.log('Data changed detected - updating table');
+              }
+            }
+          } else {
+            console.error('Failed to fetch updated results:', data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching updated results:', error);
+        });
+    }
+
+    // Set up periodic updates every 3 seconds for better responsiveness
+    function startLiveUpdates() {
+      updateInterval = setInterval(fetchUpdatedResults, 3000);
+      // Also fetch immediately on start
+      fetchUpdatedResults();
+    }
+
+    function stopLiveUpdates() {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+      }
+    }
+
+    // Start live updates and show indicator
+    startLiveUpdates();
+    liveUpdateIndicator.style.display = 'inline-block';
+
+    // Stop updates when page is not visible to save resources
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        stopLiveUpdates();
+        liveUpdateIndicator.style.display = 'none';
+      } else {
+        startLiveUpdates();
+        liveUpdateIndicator.style.display = 'inline-block';
+      }
+    });
+
+    // Search input event listener
+    searchInput.addEventListener('input', function() {
+      filterTable(this.value);
+    });
+
+    // Clear button event listener
+    clearButton.addEventListener('click', function() {
+      searchInput.value = '';
+      filterTable('');
+      searchInput.focus();
+    });
+
+    // Enter key support
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        filterTable(this.value);
+      }
+    });
+
+    // Clean up when page is about to be unloaded
+    window.addEventListener('beforeunload', stopLiveUpdates);
+  });
+
+  // Full Table View Functions - Global scope for onclick handlers
+  let fullTableData = [];
+  let filteredFullTableData = [];
+
+  // Make functions globally accessible
+  window.openFullTableView = function() {
+    // Populate the full table with current data
+    populateFullTable();
+    
+    // Populate filter dropdowns
+    populateOrderCodeFilter();
+    populateFishFilter();
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('fullTableModal'));
+    modal.show();
+  }
+
+  window.populateFullTable = function() {
+    const tbody = document.getElementById('fullTableBody');
+    const isPackingModule = {{ 'true' if session.get('packing_logged_in') else 'false' }};
+    
+    // Get current results from the main table or fetch fresh data
+    const currentResults = {{ results | tojson }};
+    fullTableData = currentResults;
+    filteredFullTableData = [...fullTableData];
+    
+    tbody.innerHTML = '';
+    
+    if (!fullTableData || fullTableData.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="${isPackingModule ? '16' : '9'}" class="text-center text-muted py-4">
+            <i class="bi bi-table fs-1 mb-3"></i>
+            <p>No processing results available for this batch.</p>
+            <small>This might be because the batch is still processing or no results were generated.</small>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    fullTableData.forEach(result => {
+      const orderCode = result.order_filename ? 
+        (result.order_filename.split('_').length >= 3 ? 
+         result.order_filename.split('_')[1] : 
+         result.order_filename.split('.')[0]) : 'N/A';
+
+      const statusClass = result.can_fulfill_carton && result.order_carton ? 
+        (result.can_fulfill_carton >= result.order_carton ? 'status-full' : 'status-not-full') : 
+        'status-not-have';
+      
+      let row = `
+        <tr class="${statusClass}">
+          <td>
+            ${result.order_filename ? 
+              `<span class="badge bg-primary text-white">${orderCode}</span>` : 
+              '<span class="text-muted">N/A</span>'}
+          </td>
+          <td><strong>${result.fish_name || 'N/A'}</strong></td>
+          <td>${result.packed_size || 'N/A'}</td>
+      `;
+
+      if (isPackingModule) {
+        // Packing Module: Show comprehensive data
+        const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+        const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+        const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+        const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+        row += `
+          <td class="text-end">${result.order_carton || 0}</td>
+          <td class="text-end">${result.stock_carton || 0}</td>
+          <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+          <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+          <td>${getStatusBadge(result.can_fulfill_carton || 0, result.order_carton || 0)}</td>
+          <td class="text-end"><strong>${result.can_fulfill_carton || 0}</strong></td>
+          <td class="text-end text-danger"><strong>${result.shortfall || 0}</strong></td>
+          <td class="text-end">${formatNumber(orderKg)}</td>
+          <td class="text-end">${formatNumber(stockKg)}</td>
+          <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+          <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+          <td>
+            ${result.remark ? 
+              `<span class="badge bg-info text-dark">${result.remark}</span>` : 
+              '<span class="text-muted">-</span>'}
+          </td>
+          <td class="text-muted small">${result.file_uploaded_at || 'N/A'}</td>
+        `;
+      } else {
+        // Raw Materials Module: Show KG-focused data
+        const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+        const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+        const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+        const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+        row += `
+          <td class="text-end"><strong>${formatNumber(orderKg)}</strong></td>
+          <td class="text-end">${formatNumber(stockKg)}</td>
+          <td>${getStatusBadge(canFulfillKg, orderKg)}</td>
+          <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+          <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+          <td class="text-end">${result.order_carton || 0}</td>
+          <td class="text-end">${result.stock_carton || 0}</td>
+          <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+          <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+          <td class="text-muted small">${result.file_uploaded_at || 'N/A'}</td>
+        `;
+      }
+
+      row += '</tr>';
+      tbody.innerHTML += row;
+    });
+
+    // Update item count
+    document.getElementById('fullTableItemCount').textContent = `${fullTableData.length} items`;
+    document.getElementById('fullTableSearchResults').textContent = `Showing all ${fullTableData.length} results`;
+  }
+
+  window.populateFishFilter = function() {
+    const fishFilter = document.getElementById('fishFilter');
+    const uniqueFish = [...new Set(fullTableData.map(result => result.fish_name).filter(name => name))];
+    
+    // Clear existing options except the first one
+    fishFilter.innerHTML = '<option value="">All Fish Types</option>';
+    
+    uniqueFish.sort().forEach(fish => {
+      const option = document.createElement('option');
+      option.value = fish;
+      option.textContent = fish;
+      fishFilter.appendChild(option);
+    });
+  }
+
+  window.populateOrderCodeFilter = function() {
+    const orderCodeFilter = document.getElementById('orderCodeFilter');
+    
+    // Extract unique order codes from the data
+    const uniqueOrderCodes = [...new Set(fullTableData.map(result => {
+      const orderCode = result.order_filename ? 
+        (result.order_filename.split('_').length >= 3 ? 
+         result.order_filename.split('_')[1] : 
+         result.order_filename.split('.')[0]) : 'N/A';
+      return orderCode;
+    }).filter(code => code && code !== 'N/A'))];
+    
+    // Clear existing options except the first one
+    orderCodeFilter.innerHTML = '<option value="">All Order Codes</option>';
+    
+    uniqueOrderCodes.sort().forEach(orderCode => {
+      const option = document.createElement('option');
+      option.value = orderCode;
+      option.textContent = orderCode;
+      orderCodeFilter.appendChild(option);
+    });
+  }
+
+  window.filterFullTable = function() {
+    const searchTerm = document.getElementById('fullTableSearch').value.toLowerCase().trim();
+    const orderCodeFilter = document.getElementById('orderCodeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const fishFilter = document.getElementById('fishFilter').value;
+    
+    filteredFullTableData = fullTableData.filter(result => {
+      // Search filter
+      const searchMatch = !searchTerm || 
+        result.fish_name?.toLowerCase().includes(searchTerm) ||
+        result.packed_size?.toLowerCase().includes(searchTerm) ||
+        result.pack?.toLowerCase().includes(searchTerm) ||
+        result.remark?.toLowerCase().includes(searchTerm) ||
+        result.order_filename?.toLowerCase().includes(searchTerm);
+      
+      // Order Code filter
+      const orderCode = result.order_filename ? 
+        (result.order_filename.split('_').length >= 3 ? 
+         result.order_filename.split('_')[1] : 
+         result.order_filename.split('.')[0]) : 'N/A';
+      const orderCodeMatch = !orderCodeFilter || orderCode === orderCodeFilter;
+      
+      // Status filter
+      const canFulfill = result.can_fulfill_carton || 0;
+      const orderAmount = result.order_carton || 0;
+      let status = '';
+      if (canFulfill === orderAmount) status = 'Full';
+      else if (canFulfill > 0) status = 'Partial';
+      else status = 'None';
+      
+      const statusMatch = !statusFilter || status === statusFilter;
+      
+      // Fish filter
+      const fishMatch = !fishFilter || result.fish_name === fishFilter;
+      
+      return searchMatch && orderCodeMatch && statusMatch && fishMatch;
+    });
+    
+    // Update table display
+    updateFullTableDisplay();
+    
+    // Update search results text
+    document.getElementById('fullTableSearchResults').textContent = 
+      `Showing ${filteredFullTableData.length} of ${fullTableData.length} results`;
+  }
+
+  window.updateFullTableDisplay = function() {
+    const tbody = document.getElementById('fullTableBody');
+    const isPackingModule = {{ 'true' if session.get('packing_logged_in') else 'false' }};
+    
+    tbody.innerHTML = '';
+    
+    if (filteredFullTableData.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="${isPackingModule ? '16' : '9'}" class="text-center text-muted py-4">
+            <i class="bi bi-search fs-1 mb-3"></i>
+            <p>No results match your filters.</p>
+            <small>Try adjusting your search criteria.</small>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    filteredFullTableData.forEach(result => {
+      const orderCode = result.order_filename ? 
+        (result.order_filename.split('_').length >= 3 ? 
+         result.order_filename.split('_')[1] : 
+         result.order_filename.split('.')[0]) : 'N/A';
+
+      const statusClass = result.can_fulfill_carton && result.order_carton ? 
+        (result.can_fulfill_carton >= result.order_carton ? 'status-full' : 'status-not-full') : 
+        'status-not-have';
+      
+      let row = `
+        <tr class="${statusClass}">
+          <td>
+            ${result.order_filename ? 
+              `<span class="badge bg-primary text-white">${orderCode}</span>` : 
+              '<span class="text-muted">N/A</span>'}
+          </td>
+          <td><strong>${result.fish_name || 'N/A'}</strong></td>
+          <td>${result.packed_size || 'N/A'}</td>
+      `;
+
+      if (isPackingModule) {
+        const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+        const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+        const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+        const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+        row += `
+          <td class="text-end">${result.order_carton || 0}</td>
+          <td class="text-end">${result.stock_carton || 0}</td>
+          <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+          <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+          <td>${getStatusBadge(result.can_fulfill_carton || 0, result.order_carton || 0)}</td>
+          <td class="text-end"><strong>${result.can_fulfill_carton || 0}</strong></td>
+          <td class="text-end text-danger"><strong>${result.shortfall || 0}</strong></td>
+          <td class="text-end">${formatNumber(orderKg)}</td>
+          <td class="text-end">${formatNumber(stockKg)}</td>
+          <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+          <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+          <td>
+            ${result.remark ? 
+              `<span class="badge bg-info text-dark">${result.remark}</span>` : 
+              '<span class="text-muted">-</span>'}
+          </td>
+          <td class="text-muted small">${result.file_uploaded_at || 'N/A'}</td>
+        `;
+      } else {
+        const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+        const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+        const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+        const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+
+        row += `
+          <td class="text-end"><strong>${formatNumber(orderKg)}</strong></td>
+          <td class="text-end">${formatNumber(stockKg)}</td>
+          <td>${getStatusBadge(canFulfillKg, orderKg)}</td>
+          <td class="text-end"><strong>${formatNumber(canFulfillKg)}</strong></td>
+          <td class="text-end text-danger"><strong>${formatNumber(shortfallKg)}</strong></td>
+          <td class="text-end">${result.order_carton || 0}</td>
+          <td class="text-end">${result.stock_carton || 0}</td>
+          <td class="text-end">${result.stock_kg_per_ctn || 0}</td>
+          <td class="text-end">${result.order_kg_per_ctn || 0}</td>
+          <td class="text-muted small">${result.file_uploaded_at || 'N/A'}</td>
+        `;
+      }
+
+      row += '</tr>';
+      tbody.innerHTML += row;
+    });
+  }
+
+  window.resetFilters = function() {
+    document.getElementById('fullTableSearch').value = '';
+    document.getElementById('orderCodeFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('fishFilter').value = '';
+    filteredFullTableData = [...fullTableData];
+    updateFullTableDisplay();
+    document.getElementById('fullTableSearchResults').textContent = `Showing all ${fullTableData.length} results`;
+  }
+
+  window.exportTableToCSV = function() {
+    const isPackingModule = {{ 'true' if session.get('packing_logged_in') else 'false' }};
+    const data = filteredFullTableData.length > 0 ? filteredFullTableData : fullTableData;
+    
+    if (!data || data.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    let csvContent = '';
+    
+    // Add headers
+    if (isPackingModule) {
+      csvContent = 'Order Code,Fish Name,Packed Size,Order CTN,Stock CTN,Stock KG/CTN,Order KG/CTN,Status,Can Fulfill,Shortfall,Total Order KG,Total Stock KG,Can Fulfill KG,Shortfall KG,Remark,File Uploaded\n';
+    } else {
+      csvContent = 'Order Code,Fish Name,Packed Size,Order KG,Stock KG,Status,Can Fulfill KG,Shortfall KG,Order CTN,Stock CTN,Stock KG/CTN,Order KG/CTN,File Uploaded\n';
+    }
+    
+    // Add data rows
+    data.forEach(result => {
+      const orderCode = result.order_filename ? 
+        (result.order_filename.split('_').length >= 3 ? 
+         result.order_filename.split('_')[1] : 
+         result.order_filename.split('.')[0]) : 'N/A';
+      
+      const orderKg = (result.order_carton || 0) * (result.order_kg_per_ctn || 1);
+      const stockKg = (result.stock_carton || 0) * (result.stock_kg_per_ctn || 1);
+      const canFulfillKg = (result.can_fulfill_carton || 0) * (result.order_kg_per_ctn || 1);
+      const shortfallKg = ((result.order_carton || 0) - (result.can_fulfill_carton || 0)) * (result.order_kg_per_ctn || 1);
+      
+      let status = '';
+      if (isPackingModule) {
+        if (result.can_fulfill_carton === result.order_carton) status = 'Full';
+        else if (result.can_fulfill_carton > 0) status = 'Partial';
+        else status = 'None';
+      } else {
+        if (canFulfillKg === orderKg) status = 'Full';
+        else if (canFulfillKg > 0) status = 'Partial';
+        else status = 'None';
+      }
+      
+      if (isPackingModule) {
+        csvContent += `"${orderCode}","${result.fish_name || 'N/A'}","${result.packed_size || 'N/A'}",${result.order_carton || 0},${result.stock_carton || 0},${result.stock_kg_per_ctn || 0},${result.order_kg_per_ctn || 0},"${status}",${result.can_fulfill_carton || 0},${result.shortfall || 0},${formatNumber(orderKg)},${formatNumber(stockKg)},${formatNumber(canFulfillKg)},${formatNumber(shortfallKg)},"${result.remark || ''}","${result.file_uploaded_at || 'N/A'}"\n`;
+      } else {
+        csvContent += `"${orderCode}","${result.fish_name || 'N/A'}","${result.packed_size || 'N/A'}",${formatNumber(orderKg)},${formatNumber(stockKg)},"${status}",${formatNumber(canFulfillKg)},${formatNumber(shortfallKg)},${result.order_carton || 0},${result.stock_carton || 0},${result.stock_kg_per_ctn || 0},${result.order_kg_per_ctn || 0},"${result.file_uploaded_at || 'N/A'}"\n`;
+      }
+    });
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `batch_processing_results_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // Event listeners for full table functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    // Full table search
+    const fullTableSearch = document.getElementById('fullTableSearch');
+    if (fullTableSearch) {
+      fullTableSearch.addEventListener('input', filterFullTable);
+    }
+    
+    // Clear full search
+    const clearFullSearch = document.getElementById('clearFullSearch');
+    if (clearFullSearch) {
+      clearFullSearch.addEventListener('click', function() {
+        document.getElementById('fullTableSearch').value = '';
+        filterFullTable();
+        document.getElementById('fullTableSearch').focus();
+      });
+    }
+    
+    // Order Code filter
+    const orderCodeFilter = document.getElementById('orderCodeFilter');
+    if (orderCodeFilter) {
+      orderCodeFilter.addEventListener('change', filterFullTable);
+    }
+    
+    // Status filter
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+      statusFilter.addEventListener('change', filterFullTable);
+    }
+    
+    // Fish filter
+    const fishFilter = document.getElementById('fishFilter');
+    if (fishFilter) {
+      fishFilter.addEventListener('change', filterFullTable);
+    }
+  });
+</script>
+{% endblock %}

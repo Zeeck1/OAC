@@ -96,6 +96,28 @@
       background-color: var(--card-bg);
       border-color: var(--border-color);
     }
+
+    /* Module navigation styles */
+    .hover-shadow {
+      transition: all 0.3s ease;
+    }
+
+    .hover-shadow:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-bs-theme="dark"] .hover-shadow:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .border-primary {
+      border-color: #0d6efd !important;
+    }
+
+    .border-success {
+      border-color: #198754 !important;
+    }
     
     [data-bs-theme="dark"] .dropdown-item {
       color: var(--text-primary);
@@ -133,6 +155,52 @@
             </div>
           </div>
 
+          <!-- Module Navigation -->
+          <div class="row justify-content-center mb-4">
+            <div class="col-lg-10 col-xl-9">
+              <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                  <h5 class="card-title text-center mb-3">
+                    <i class="bi bi-grid-3x3-gap text-primary me-2"></i>
+                    Access Modules
+                  </h5>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <a href="{{ url_for('packing') }}" class="text-decoration-none">
+                        <div class="card h-100 border-primary hover-shadow">
+                          <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                              <i class="bi bi-boxes display-4 text-primary"></i>
+                            </div>
+                            <h6 class="card-title text-primary fw-bold mb-2">Packing</h6>
+                            <p class="card-text text-muted small mb-0">
+                              Manage packing operations and track order fulfillment
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                    <div class="col-md-6">
+                      <a href="{{ url_for('raw_materials') }}" class="text-decoration-none">
+                        <div class="card h-100 border-success hover-shadow">
+                          <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                              <i class="bi bi-tree display-4 text-success"></i>
+                            </div>
+                            <h6 class="card-title text-success fw-bold mb-2">Raw Materials</h6>
+                            <p class="card-text text-muted small mb-0">
+                              Monitor inventory levels and material availability
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Main Card -->
           <div class="card shadow-lg border-0">
             <div class="card-body p-4 p-md-5">
@@ -164,7 +232,8 @@
               <!-- Upload Form -->
               <form class="needs-validation upload-form" method="post" action="{{ url_for('process') }}" enctype="multipart/form-data" novalidate>
                 <div class="row g-4">
-                  <div class="col-md-6">
+                  <!-- Stock Files Row -->
+                  <div class="col-md-4">
                     <div class="upload-section">
                       <label class="form-label d-flex align-items-center">
                         <i class="bi bi-database me-2 text-primary"></i>
@@ -190,7 +259,54 @@
                     </div>
                   </div>
 
-                  <div class="col-md-6">
+                  <div class="col-md-4">
+                    <div class="upload-section">
+                      <label class="form-label d-flex align-items-center">
+                        <i class="bi bi-truck me-2 text-warning"></i>
+                        <span class="fw-semibold">Import Stock File</span>
+                        <!-- <span class="text-muted ms-1">(Optional)</span> -->
+                      </label>
+                      <div class="file-upload-wrapper">
+                        <input class="form-control file-input" type="file" name="import_stock_file"
+                               accept=".xlsx,.xls,.csv" id="import-stock-file"
+                               aria-describedby="import-stock-file-help" />
+                        <div class="file-upload-overlay">
+                          <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
+                          <p class="text-muted mb-0">Drop file here or click to browse</p>
+                        </div>
+                      </div>
+                      <div id="import-stock-file-help" class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Additional stock from imports (same format as regular stock)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="upload-section">
+                      <label class="form-label d-flex align-items-center">
+                        <i class="bi bi-box-seam me-2 text-info"></i>
+                        <span class="fw-semibold">Extra-Load Stock File</span>
+                        <!-- <span class="text-muted ms-1">(Optional)</span> -->
+                      </label>
+                      <div class="file-upload-wrapper">
+                        <input class="form-control file-input" type="file" name="extra_load_stock_file"
+                               accept=".xlsx,.xls,.csv" id="extra-load-stock-file"
+                               aria-describedby="extra-load-stock-file-help" />
+                        <div class="file-upload-overlay">
+                          <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
+                          <p class="text-muted mb-0">Drop file here or click to browse</p>
+                        </div>
+                      </div>
+                      <div id="extra-load-stock-file-help" class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Additional extra-load stock (same format as regular stock)
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Order File Row -->
+                  <div class="col-12">
                     <div class="upload-section">
                       <label class="form-label d-flex align-items-center">
                         <i class="bi bi-cart me-2 text-success"></i>
