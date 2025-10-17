@@ -2159,7 +2159,7 @@ def get_gemini_response(user_message: str, explore_mode: bool = False) -> str:
         genai.configure(api_key=os.environ.get("GOOGLE_GEMINI_API_KEY", "AIzaSyCi73jHobzWfU7ZjbT_hqhwSVpfUjjJW3o"))
         
         # Initialize Gemini model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
 
         # Create system prompt with actual database data
         system_prompt = f"""You are CK Intelligence, an AI assistant created by CK Frozen Fish and Foods (Thailand) Co., Ltd.
