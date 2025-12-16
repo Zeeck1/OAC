@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Recent Modules - Order Availability Checker{% endblock %}
+{% block head_extra %}
+  <style>
+    /* Dark theme fixes */
+    [data-bs-theme="dark"] .text-dark {
+      color: var(--text-primary) !important;
+    }
+    
+    [data-bs-theme="dark"] .text-muted {
+      color: var(--text-secondary) !important;
+    }
+    
+    .hover-shadow {
+      transition: all 0.3s ease;
+    }
+
+    .hover-shadow:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-bs-theme="dark"] .hover-shadow:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+{% endblock %}
+{% block content %}
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+          <!-- Page Header -->
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <h1 class="display-6 fw-bold text-gradient mb-2">Recent Modules</h1>
+              <p class="text-muted mb-0">View all your processing history</p>
+            </div>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-2"></i>Back to Home
+            </a>
+          </div>
+
+          <!-- All Processing History -->
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between">
+                <h5 class="fw-bold text-dark mb-0">
+                  <i class="bi bi-clock-history me-2 text-primary"></i>All Processing History
+                </h5>
+                <span class="badge bg-light text-dark">{{ all_sessions|length }} total</span>
+              </div>
+            </div>
+            <div class="card-body pt-3">
+              {% if all_sessions %}
+              <div class="row g-3">
+                {% for session in all_sessions %}
+                <div class="col-12">
+                  <div class="border rounded-3 p-3 hover-shadow transition-all history-item" data-href="{{ url_for('view_session', session_id=session.id) }}">
+                      <div class="d-flex align-items-start justify-content-between">
+                        <div class="flex-grow-1">
+                          <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if session.processing_type == 'batch' %}
+                              <span class="badge bg-info text-white">
+                                <i class="bi bi-files me-1"></i>Batch
+                              </span>
+                            {% else %}
+                              <span class="badge bg-success text-white">
+                                <i class="bi bi-file-earmark me-1"></i>Single
+                              </span>
+                            {% endif %}
+                          <small class="text-muted">{{ session.created_at }}</small>
+                          <div class="ms-auto d-flex align-items-center gap-2">
+                            <form method="post" action="{{ url_for('delete_session') }}" onsubmit="return handleDeleteSubmit(event);">
+                              <input type="hidden" name="session_id" value="{{ session.id }}" />
+                              <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="event.stopPropagation();"><i class="bi bi-trash"></i></button>
+                            </form>
+                            <a href="{{ url_for('view_session', session_id=session.id) }}" class="btn btn-sm btn-outline-primary" title="Open" onclick="event.stopPropagation();"><i class="bi bi-arrow-right"></i></a>
+                          </div>
+                          </div>
+                          
+                          <div class="mb-2">
+                            <div class="fw-medium text-dark mb-1">
+                              <i class="bi bi-database text-primary me-1"></i>
+                              Stock: {{ session.stock_filename or 'Unknown' }}
+                            </div>
+                            <div class="text-muted small">
+                              <i class="bi bi-cart text-success me-1"></i>
+                              Orders: {{ session.order_filenames or 'Unknown' }} 
+                              <span class="badge bg-light text-dark ms-1">{{ session.order_files }} files</span>
+                            </div>
+                          </div>
+                          
+                          <div class="d-flex gap-3 small">
+                            <span class="text-success">
+                              <i class="bi bi-check-circle me-1"></i>{{ session.full_items }} Available
+                            </span>
+                            <span class="text-warning">
+                              <i class="bi bi-exclamation-triangle me-1"></i>{{ session.not_full_items }} Not Full
+                            </span>
+                            <span class="text-secondary">
+                              <i class="bi bi-x-circle me-1"></i>{{ session.not_have_items }} Not have
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div class="text-end">
+                          <div class="fw-bold text-primary mb-1">{{ session.total_items }}</div>
+                          <div class="small text-muted">Total Items</div>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                <p class="text-muted">No processing history found.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                  <i class="bi bi-plus-circle me-2"></i>Start Processing
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      // Handle delete form submission
+      function handleDeleteSubmit(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        
+        if (confirm('Delete this history?')) {
+          // Submit the form
+          event.target.submit();
+          return true;
+        }
+        return false;
+      }
+
+      // Make entire history card clickable
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.history-item[data-href]').forEach(card => {
+          card.addEventListener('click', () => {
+            const url = card.getAttribute('data-href');
+            if (url) window.location.href = url;
+          });
+        });
+      });
+    </script>
+{% endblock %}
+

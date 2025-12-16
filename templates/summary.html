@@ -216,6 +216,77 @@
       background-color: var(--bg-secondary);
       border-color: var(--border-color);
     }
+    
+    /* Responsive scrollable table container for Available Orders */
+    .orders-scroll-container {
+      max-height: 50vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    }
+    
+    .orders-scroll-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .orders-scroll-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .orders-scroll-container::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    
+    .orders-scroll-container::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Dark theme scrollbar */
+    [data-bs-theme="dark"] .orders-scroll-container {
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    
+    [data-bs-theme="dark"] .orders-scroll-container::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    [data-bs-theme="dark"] .orders-scroll-container::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Responsive height adjustments */
+    @media (max-width: 991.98px) {
+      .orders-scroll-container {
+        max-height: 40vh;
+      }
+    }
+    
+    @media (max-width: 767.98px) {
+      .orders-scroll-container {
+        max-height: 35vh;
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .orders-scroll-container {
+        max-height: 55vh;
+      }
+    }
+    
+    /* Ensure sticky header works properly */
+    .orders-scroll-container .table thead.sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #f8f9fa;
+    }
+    
+    [data-bs-theme="dark"] .orders-scroll-container .table thead.sticky-top {
+      background-color: var(--bg-secondary);
+    }
   </style>
 {% endblock %}
 {% block content %}
@@ -807,7 +878,7 @@
                       </h6>
                     </div>
                     <div class="card-body p-0">
-                      <div class="table-responsive" style="max-height: 400px;">
+                      <div class="table-responsive orders-scroll-container">
                         <table class="table align-middle m-0">
                           <thead class="table-light sticky-top">
                             <tr>
@@ -833,7 +904,7 @@
                       </h6>
                     </div>
                     <div class="card-body p-0">
-                      <div class="table-responsive" style="max-height: 400px;">
+                      <div class="table-responsive orders-scroll-container">
                         <table class="table align-middle m-0">
                           <thead class="table-light sticky-top">
                             <tr>

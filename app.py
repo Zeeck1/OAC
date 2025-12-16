@@ -1465,9 +1465,24 @@ def index():
     return render_template("index.html", recent_sessions=recent_sessions)
 
 
+@app.get('/api/all-sessions')
+def get_all_sessions():
+    """API endpoint to get all processing sessions."""
+    all_sessions = get_recent_sessions(limit=10000)  # Large limit to get all sessions
+    return jsonify(all_sessions)
+
+
+@app.get('/recent-modules')
+def recent_modules():
+    """Display all processing history in a dedicated page."""
+    all_sessions = get_recent_sessions(limit=10000)  # Get all sessions
+    return render_template("recent_modules.html", all_sessions=all_sessions)
+
+
 @app.post('/delete-session')
 def delete_session():
     session_id = request.form.get('session_id', type=int)
+    redirect_to = request.referrer  # Get the referrer to redirect back
     if not session_id:
         flash('Invalid session selected.', 'error')
         return redirect(url_for('index'))
@@ -1512,6 +1527,10 @@ def delete_session():
         flash('History entry deleted.', 'success')
     except Exception as e:
         flash(f'Failed to delete: {e}', 'error')
+    
+    # Redirect back to the page the user came from
+    if redirect_to and 'recent-modules' in redirect_to:
+        return redirect(url_for('recent_modules'))
     return redirect(url_for('index'))
 
 
@@ -2156,7 +2175,7 @@ def get_gemini_response(user_message: str, explore_mode: bool = False) -> str:
         db_data = get_relevant_database_data(message_lower)
 
         # Configure Google Gemini AI
-        genai.configure(api_key=os.environ.get("GOOGLE_GEMINI_API_KEY", "AIzaSyCi73jHobzWfU7ZjbT_hqhwSVpfUjjJW3o"))
+        genai.configure(api_key=os.environ.get("GOOGLE_GEMINI_API_KEY", "AIzaSyD7-1AZTsq25vbI7G_iSgRMwtYQIIjyQ10"))
         
         # Initialize Gemini model
         model = genai.GenerativeModel('gemini-2.0-flash')
@@ -2203,8 +2222,10 @@ The company website (https://ckfff.net/) is organized into several sections:
 
 **Main persons**
 - Mr. Mohammad Ali Khan is the founder and CEO of CK Frozen Fish and Foods CO.,Ltd.
-- Ms. Jaruwan (CEO of CK Thailand and wife of Mr. Mohammad Ali Khan), Mr. Montree (Assistant of CK Frozen Fish and Foods), and staff
-- Mr.Sal is also the leader of CK who work as a Assistant supervisor was a son of Mr. Mohammad Ali Khan and Ms. Jaruwan.
+- Ms. Jaruwan (Managing Director of CK Thailand and wife of Mr. Mohammad Ali Khan), Mr. Montree (Assistant of CK Frozen Fish and Foods), and staff
+- Mr.Sal is also the leader of CK who work as a Ssecretary of Managing Director was a son of Mr. Mohammad Ali Khan and Ms. Jaruwan.
+- Mr.Chui is a Manager.
+
 
 **Happy New Year 2025 Event:**
 - Held on February 22, 2025, at the Chachoengsao and Samut Prakan branches
@@ -2522,13 +2543,13 @@ The company website (https://ckfff.net/) is organized into several sections:
 
 **Main persons**
 - Mr. Mohammad Ali Khan is the founder and CEO of CK Frozen Fish and Foods CO.,Ltd.
-- Ms. Jaruwan (CEO of CK Thailand and wife of Mr. Mohammad Ali Khan), Mr. Montree (Assistant of CK Frozen Fish and Foods), and staff
-- Mr.Sal is also the leader of CK who work as a Assistant supervisor was a son of Mr. Mohammad Ali Khan and Ms. Jaruwan.
-
+- Ms. Jaruwan (Managing Director of CK Thailand and wife of Mr. Mohammad Ali Khan), Mr. Montree (Assistant of CK Frozen Fish and Foods), and staff
+- Mr.Sal is also the leader of CK who work as a Secretary of Managing Director was a son of Mr. Mohammad Ali Khan and Ms. Jaruwan.
+- Mr. is also the leader of CK who work as a Secretary of Managing Director was a son of Mr. Mohammad Ali Khan and Ms. Jaruwan.
 
 **Happy New Year 2025 Event:**
 - Held on February 22, 2025, at the Chachoengsao and Samut Prakan branches
-- Mr. Shahzada Mohammad Ali Khan chaired the event
+- Mr.Chui is a Manager.
 
 
 **Media Interview:**
