@@ -2175,10 +2175,10 @@ def get_gemini_response(user_message: str, explore_mode: bool = False) -> str:
         db_data = get_relevant_database_data(message_lower)
 
         # Configure Google Gemini AI
-        genai.configure(api_key=os.environ.get("GOOGLE_GEMINI_API_KEY", "AIzaSyD7-1AZTsq25vbI7G_iSgRMwtYQIIjyQ10"))
+        genai.configure(api_key=os.environ.get("GOOGLE_GEMINI_API_KEY"))
         
         # Initialize Gemini model
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
         # Create system prompt with actual database data
         system_prompt = f"""You are CK Intelligence, an AI assistant created by CK Frozen Fish and Foods (Thailand) Co., Ltd.
